@@ -1,0 +1,443 @@
+﻿@model InventorySolution.Models.Entities.Order
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary: #56DFCF;
+            --secondary: #708A58;
+            --accent: #FCEF91;
+            --light: #F8FAFC;
+            --dark: #2D3748;
+        }
+
+        body {
+            background-color: var(--light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+
+        .order-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .order-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 25px 30px;
+            border-radius: 15px;
+            color: white;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            .order-header h2 {
+                margin: 0;
+                font-weight: 700;
+            }
+
+        .status-badge {
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+        }
+
+        .status-cancelled {
+            background: rgba(220, 53, 69, 0.2);
+            border-color: #dc3545;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            font-weight: 600;
+            padding: 15px 20px;
+            border-radius: 15px 15px 0 0 !important;
+        }
+
+        .card-body {
+            padding: 25px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .info-item {
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(112, 138, 88, 0.05);
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--secondary);
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+        }
+
+        .btn-cancel {
+            background: linear-gradient(to right, #dc3545, #e35d6a);
+            border: none;
+            border-radius: 50px;
+            padding: 12px 25px;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+            .btn-cancel:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 7px 15px rgba(220, 53, 69, 0.3);
+            }
+
+        .order-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            background: white;
+        }
+
+            .order-table thead {
+                background: linear-gradient(to right, var(--primary), var(--secondary));
+                color: white;
+            }
+
+            .order-table th {
+                padding: 15px 20px;
+                text-align: left;
+                font-weight: 600;
+            }
+
+            .order-table td {
+                padding: 15px 20px;
+                border-bottom: 1px solid rgba(0,0,0,0.05);
+            }
+
+            .order-table tbody tr:last-child td {
+                border-bottom: none;
+            }
+
+            .order-table tfoot {
+                background: rgba(86, 223, 207, 0.1);
+            }
+
+                .order-table tfoot th, .order-table tfoot td {
+                    padding: 15px 20px;
+                    font-weight: 600;
+                }
+
+        .product-image {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-right: 15px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .product-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .text-end {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .total-row {
+            font-size: 1.2rem;
+            color: var(--secondary);
+        }
+
+        .grand-total {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+
+        @@media (max-width: 768px) {
+            .order-container {
+                padding: 15px;
+            }
+
+            .order-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .order-table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .product-info {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .product-image {
+                margin-bottom: 10px;
+            }
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+            margin-top: 20px;
+        }
+
+            .timeline::before {
+                content: '';
+                position: absolute;
+                left: 10px;
+                top: 0;
+                height: 100%;
+                width: 2px;
+                background: var(--primary);
+            }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+            .timeline-item::before {
+                content: '';
+                position: absolute;
+                left: -26px;
+                top: 5px;
+                width: 16px;
+                height: 16px;
+                border-radius: 50%;
+                background: var(--secondary);
+                border: 3px solid white;
+                box-shadow: 0 0 0 2px var(--primary);
+            }
+
+        .timeline-date {
+            font-weight: 600;
+            color: var(--secondary);
+        }
+
+        .timeline-content {
+            background: rgba(112, 138, 88, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="order-container">
+        <div class="order-header">
+            <h2>Order #@Model.Id</h2>
+            <div class="status-badge @(Model.Status == OrderStatus.Cancelled ? "status-cancelled" : "")">
+                @Model.Status
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-receipt me-2"></i>Order Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Order Date</div>
+                                <div class="info-value">@Model.OrderDate.ToString("f")</div>
+                            </div>
+
+                            <div class="info-item">
+                                <div class="info-label">Last Updated</div>
+                                <div class="info-value">@Model.LastStatusChange.ToString("f")</div>
+                            </div>
+
+                            <div class="info-item">
+                                <div class="info-label">Payment Method</div>
+                                <div class="info-value">@Model.PaymentMethod</div>
+                            </div>
+
+                            <div class="info-item">
+                                <div class="info-label">Transaction ID</div>
+                                <div class="info-value">@(Model.Payment?.TransactionId ?? "N/A")</div>
+                            </div>
+
+                            <div class="info-item">
+                                <div class="info-label">Total Amount</div>
+                                <div class="info-value fw-bold text-success">Rs. @Model.TotalAmount.ToString("0.00")</div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <h6 class="mb-3">Order Timeline</h6>
+                            <div class="timeline">
+                                <div class="timeline-item">
+                                    <div class="timeline-date">@Model.OrderDate.ToString("f")</div>
+                                    <div class="timeline-content">
+                                        Order placed successfully
+                                    </div>
+                                </div>
+
+                                <div class="timeline-item">
+                                    <div class="timeline-date">@Model.OrderDate.AddMinutes(15).ToString("f")</div>
+                                    <div class="timeline-content">
+                                        Payment confirmed
+                                    </div>
+                                </div>
+
+                                <div class="timeline-item">
+                                    <div class="timeline-date">@Model.LastStatusChange.ToString("f")</div>
+                                    <div class="timeline-content">
+                                        Order status changed to: @Model.Status
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-geo-alt me-2"></i>Pickup Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Location</div>
+                                <div class="info-value">@Model.Location?.Name</div>
+                            </div>
+
+                            <div class="info-item">
+                                <div class="info-label">Address</div>
+                                <div class="info-value">@Model.Location?.Address</div>
+                            </div>
+
+                            <div class="info-item">
+                                <div class="info-label">Location Fee</div>
+                                <div class="info-value">Rs. @Model.Location?.Price.ToString("0.00")</div>
+                            </div>
+
+                            <div class="info-item">
+                                <div class="info-label">Estimated Pickup</div>
+                                <div class="info-value">Within 2 hours</div>
+                            </div>
+                        </div>
+
+                        @if (Model.Status != OrderStatus.Delivered && Model.Status != OrderStatus.Cancelled)
+                        {
+                            <form asp-action="CancelOrder" method="post" class="mt-4">
+                                <input type="hidden" name="id" value="@Model.Id" />
+                                <button type="submit" class="btn btn-cancel">
+                                    <i class="bi bi-x-circle me-1"></i> Cancel Order
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-cart-check me-2"></i>Order Items</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="order-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th class="text-center">Quantity</th>
+                            <th class="text-end">Unit Price</th>
+                            <th class="text-end">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="product-info">
+                                        @if (!string.IsNullOrEmpty(item.Product?.ImagePath))
+                                        {
+                                            <img src="@item.Product.ImagePath" class="product-image"
+                                                 alt="@item.Product.Name">
+                                        }
+                                        <div>
+                                            @item.Product?.Name
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center">@item.Quantity</td>
+                                <td class="text-end">Rs. @item.UnitPrice.ToString("0.00")</td>
+                                <td class="text-end">Rs. @((item.Quantity * item.FinalPrice).ToString("0.00"))</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="3" class="text-end">Subtotal:</th>
+                            <td class="text-end total-row">Rs. @Model.Items.Sum(i => i.Quantity * i.FinalPrice).ToString("0.00")</td>
+                        </tr>
+                        <tr>
+                            <th colspan="3" class="text-end">Location Fee:</th>
+                            <td class="text-end total-row">Rs. @Model.Location?.Price.ToString("0.00")</td>
+                        </tr>
+                        <tr>
+                            <th colspan="3" class="text-end">Grand Total:</th>
+                            <td class="text-end grand-total">Rs. @Model.TotalAmount.ToString("0.00")</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

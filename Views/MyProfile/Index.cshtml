@@ -1,0 +1,65 @@
+﻿@using InventorySolution.Models.ViewModels
+@model EditMyProfileViewModel
+
+@{
+    ViewData["Title"] = "My Profile";
+    Layout = "_CustomerLayout";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title">My Profile</h3>
+        </div>
+        <div class="card-body">
+            @if (ViewBag.SuccessMessage != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @ViewBag.SuccessMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <form asp-action="Index">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="mb-3">
+                    <label asp-for="FullName" class="form-label"></label>
+                    <input asp-for="FullName" class="form-control" />
+                    <span asp-validation-for="FullName" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="SecurityQuestion" class="form-label"></label>
+                    <select asp-for="SecurityQuestion" class="form-select">
+                        <option value="">-- Select Security Question --</option>
+                        @foreach (var question in Model.AvailableSecurityQuestions)
+                        {
+                            <option value="@question">@question</option>
+                        }
+                    </select>
+                    <span asp-validation-for="SecurityQuestion" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="SecurityAnswer" class="form-label"></label>
+                    <input asp-for="SecurityAnswer" class="form-control" />
+                    <span asp-validation-for="SecurityAnswer" class="text-danger"></span>
+                    <div class="form-text">Leave blank if you don't want to change your security answer</div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

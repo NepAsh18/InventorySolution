@@ -1,0 +1,193 @@
+﻿<!-- Views/Checkout/OrderDetails.cshtml -->
+@model InventorySolution.Models.Entities.Order
+@using InventorySolution.Models.Entities
+
+@{
+    ViewData["Title"] = "Order Details";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a asp-controller="Customer" asp-action="OrderHistory" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to Orders
+            </a>
+            <h1 class="h3 mb-0 mt-3">Order #@Model.Id</h1>
+        </div>
+        <span class="badge @GetStatusBadgeClass(Model.Status) fs-6">
+            @Model.Status
+        </span>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-cart-check me-2"></i>Order Items</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th class="text-end">Price</th>
+                                    <th class="text-center">Qty</th>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                @if (!string.IsNullOrEmpty(item.Product?.ImagePath))
+                                                {
+                                                    <img src="@item.Product.ImagePath"
+                                                         class="img-thumbnail me-3"
+                                                         alt="@item.Product.Name"
+                                                         style="width: 60px; height: 60px; object-fit: cover;">
+                                                }
+                                                <div>
+                                                    <div class="fw-medium">@item.Product?.Name</div>
+                                                    @* Optional: Add other product info if needed *@
+                                                     <div class="text-muted small">Category: @item.Product?.Category</div> 
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-end">Rs. @item.UnitPrice.ToString("0.00")</td>
+                                        <td class="text-center">@item.Quantity</td>
+                                        <td class="text-end">Rs. @((item.Quantity * item.FinalPrice).ToString("0.00"))</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-receipt me-2"></i>Order Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <span>Rs. @Model.Items.Sum(i => i.Quantity * i.FinalPrice).ToString("0.00")</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Location Fee:</span>
+                        <span>Rs. @Model.Location?.Price.ToString("0.00")</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3 fw-bold fs-5">
+                        <span>Grand Total:</span>
+                        <span>Rs. @Model.TotalAmount.ToString("0.00")</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-geo-alt me-2"></i>Pickup Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="small text-muted">Location</div>
+                        <div>@Model.Location?.Name</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="small text-muted">Address</div>
+                        <div>@Model.Location?.Address</div>
+                    </div>
+                    <div>
+                        <div class="small text-muted">Estimated Pickup</div>
+                        <div>Within 2 hours</div>
+                    </div>
+
+                    @if (Model.Status != OrderStatus.Delivered && Model.Status != OrderStatus.Cancelled)
+                    {
+                        <div class="mt-4">
+                            <form asp-action="CancelOrder" method="post">
+                                <input type="hidden" name="id" value="@Model.Id" />
+                                <button type="submit" class="btn btn-danger w-100">
+                                    <i class="bi bi-x-circle me-1"></i> Cancel Order
+                                </button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-credit-card me-2"></i>Payment Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="small text-muted">Payment Method</div>
+                        <div>@Model.PaymentMethod</div>
+                    </div>
+                    <div>
+                        <div class="small text-muted">Transaction ID</div>
+                        <div>@(Model.Payment?.TransactionId ?? "N/A")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Order Timeline</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex mb-3">
+                        <div class="text-success me-3"><i class="bi bi-check-circle-fill"></i></div>
+                        <div>
+                            <div class="fw-medium">Order Placed</div>
+                            <div class="text-muted small">@Model.OrderDate.ToString("f")</div>
+                        </div>
+                    </div>
+                    <div class="d-flex mb-3">
+                        <div class="text-success me-3"><i class="bi bi-check-circle-fill"></i></div>
+                        <div>
+                            <div class="fw-medium">Payment Confirmed</div>
+                            <div class="text-muted small">@Model.OrderDate.AddMinutes(15).ToString("f")</div>
+                        </div>
+                    </div>
+                    <div class="d-flex">
+                        <div class="@(Model.Status == OrderStatus.Cancelled ? "text-danger" : "text-primary") me-3">
+                            <i class="bi @(Model.Status == OrderStatus.Cancelled ? "bi-x-circle-fill" : "bi-arrow-repeat")"></i>
+                        </div>
+                        <div>
+                            <div class="fw-medium">@(Model.Status == OrderStatus.Cancelled ? "Order Cancelled" : "Current Status")</div>
+                            <div class="text-muted small">@Model.LastStatusChange.ToString("f")</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetStatusBadgeClass(OrderStatus status)
+    {
+        return status switch
+        {
+            OrderStatus.Pending => "bg-warning text-dark",
+            OrderStatus.Processing => "bg-info",
+            OrderStatus.Delivered => "bg-success",
+            OrderStatus.Cancelled => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+}

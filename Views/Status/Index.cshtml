@@ -1,0 +1,580 @@
+﻿@model IEnumerable<InventorySolution.Models.Entities.Order>
+@using InventorySolution.Models.Entities
+
+@{
+    ViewData["Title"] = "Order Status Management";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var selectedOrderId = ViewBag.SelectedOrderId as int?;
+}
+
+@section Styles {
+    <style>
+        :root {
+            --primary: #725CAD; /* Purple primary color */
+            --primary-light: #8C7AB8;
+            --secondary: #FFC107;
+            --accent-light: #C0C9EE;
+            --accent-dark: #5A4A8C;
+        }
+
+        body {
+            background-color: #C0C9EE;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            background: white;
+            margin-bottom: 25px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+            .card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+            }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 15px 20px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h2 {
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 25px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+            h2:after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 80px;
+                height: 4px;
+                background: linear-gradient(90deg, var(--primary), var(--accent-dark));
+                border-radius: 2px;
+            }
+
+        .table th {
+            background: linear-gradient(to bottom, #e0e4f7, #d1d7f0);
+            color: #2c387e;
+            font-weight: 600;
+            border-top: none;
+            border-bottom: 2px solid #dee2e6;
+            padding: 15px;
+        }
+
+        .table td {
+            padding: 12px 15px;
+            vertical-align: middle;
+        }
+
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(192, 201, 238, 0.15);
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(114, 92, 173, 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 15px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(114, 92, 173, 0.3);
+            }
+
+        .btn-outline-primary {
+            border-color: var(--primary);
+            color: var(--primary);
+            border-radius: 8px;
+            font-weight: 600;
+            padding: 8px 15px;
+        }
+
+            .btn-outline-primary:hover {
+                background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+                color: white;
+            }
+
+        .icon-container {
+            background: rgba(192, 201, 238, 0.3);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+
+        .stats-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .stats-card-body {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stats-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+        }
+
+        .icon-total {
+            background: rgba(114, 92, 173, 0.15);
+            color: var(--primary);
+        }
+
+        .icon-pending {
+            background: rgba(255, 193, 7, 0.15);
+            color: #ff9800;
+        }
+
+        .icon-processing {
+            background: rgba(114, 92, 173, 0.15);
+            color: var(--primary);
+        }
+
+        .icon-revenue {
+            background: rgba(114, 92, 173, 0.15);
+            color: var(--accent-dark);
+        }
+
+        .table-active {
+            background-color: rgba(224, 228, 247, 0.7) !important;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1050;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+            .modal-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+
+        .modal-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 1200px;
+            max-height: 90vh;
+            overflow: auto;
+            transform: translateY(50px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-container {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .action-cell {
+            min-width: 150px;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .bg-pending {
+            background-color: rgba(255, 193, 7, 0.2);
+            color: #856404;
+        }
+
+        .bg-paid {
+            background-color: rgba(114, 92, 173, 0.2);
+            color: #4e387e;
+        }
+
+        .bg-processing {
+            background-color: rgba(114, 92, 173, 0.2) !important;
+            color: #4e387e !important;
+        }
+
+        .bg-shipped {
+            background-color: rgba(54, 185, 204, 0.2);
+            color: #0b7285;
+        }
+
+        .bg-delivered {
+            background-color: rgba(52, 116, 51, 0.2);
+            color: #2c662d;
+        }
+
+        .bg-cancelled {
+            background-color: rgba(231, 74, 59, 0.2);
+            color: #a94442;
+        }
+
+        @@media (max-width: 768px) {
+            .action-cell
+
+        {
+            min-width: auto;
+        }
+
+        .btn-group {
+            width: 100%;
+        }
+
+        .btn {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .stats-card-body {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .stats-icon {
+            margin-top: 15px;
+        }
+
+        }
+
+        /* Disable DataTables sorting arrows */
+        .table.no-sort th {
+            pointer-events: none;
+        }
+    </style>
+}
+
+<div class="container-fluid">
+    <h2><i class="fas fa-clipboard-list me-2"></i>Order Status Management</h2>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stats-card">
+                <div class="stats-card-body">
+                    <div>
+                        <h6 class="text-muted mb-2">Total Orders</h6>
+                        <h3 class="mb-0">@Model.Count()</h3>
+                    </div>
+                    <div class="stats-icon icon-total">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stats-card">
+                <div class="stats-card-body">
+                    <div>
+                        <h6 class="text-muted mb-2">Pending</h6>
+                        <h3 class="mb-0">@ViewBag.PendingOrderCount</h3>
+                    </div>
+                    <div class="stats-icon icon-pending">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stats-card">
+                <div class="stats-card-body">
+                    <div>
+                        <h6 class="text-muted mb-2">Processing</h6>
+                        <h3 class="mb-0">@Model.Count(o => o.Status == OrderStatus.Processing)</h3>
+                    </div>
+                    <div class="stats-icon icon-processing">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stats-card">
+                <div class="stats-card-body">
+                    <div>
+                        <h6 class="text-muted mb-2">Revenue</h6>
+                        <h3 class="mb-0">Rs @Model.Sum(o => o.TotalAmount).ToString("N0")</h3>
+                    </div>
+                    <div class="stats-icon icon-revenue">
+                        <i class="fas fa-rupee-sign"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="m-0"><i class="fas fa-list me-2"></i>All Orders (Current Month)</h6>
+                        <span class="badge bg-warning text-dark p-2">
+                            <i class="fas fa-exclamation-circle me-2"></i>Pending: @ViewBag.PendingOrderCount
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped no-sort" id="ordersTable">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-hashtag me-2"></i>ID</th>
+                                    <th><i class="fas fa-user me-2"></i>Customer</th>
+                                    <th><i class="fas fa-calendar me-2"></i>Order Date</th>
+                                    <th><i class="fas fa-money-bill-wave me-2"></i>Amount</th>
+                                    <th><i class="fas fa-tag me-2"></i>Status</th>
+                                    <th class="action-cell"><i class="fas fa-cogs me-2"></i>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model == null || !Model.Any())
+                                {
+                                    <tr>
+                                        <td colspan="6" class="text-center">No orders found for the current month.</td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    @foreach (var order in Model)
+                                    {
+                                        <tr class="@(selectedOrderId == order.Id ? "table-active" : "")">
+                                            <td>#@order.Id</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="icon-container">
+                                                        <i class="fas fa-user text-primary"></i>
+                                                    </div>
+                                                    <div>@(order.User?.FullName ?? "Unknown")</div>
+                                            </td>
+                                            <td>@order.OrderDate.ToString("g")</td>
+                                            <td><strong>Rs @order.TotalAmount.ToString("N0")</strong></td>
+                                            <td>
+                                                <span class="status-badge @GetStatusBadgeClass(order.Status)">
+                                                    <i class="fas fa-circle me-1" style="font-size:8px; vertical-align: middle;"></i>
+                                                    @order.Status
+                                                </span>
+                                            </td>
+                                            <td class="action-cell">
+                                                <div class="d-flex gap-2">
+                                                    <button class="btn btn-sm btn-primary view-order"
+                                                            data-id="@order.Id" title="View Details">
+                                                        <i class="fas fa-eye me-1"></i> View
+                                                    </button>
+                                                    <div class="btn-group">
+                                                        <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle"
+                                                                data-bs-toggle="dropdown" aria-expanded="false">
+                                                            <i class="fas fa-exchange-alt"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu">
+                                                            @foreach (OrderStatus status in Enum.GetValues(typeof(OrderStatus)))
+                                                            {
+                                                                <li>
+                                                                    <form method="post" asp-action="UpdateStatus">
+                                                                        <input type="hidden" name="id" value="@order.Id" />
+                                                                        <input type="hidden" name="status" value="@status" />
+                                                                        <button type="submit" class="dropdown-item">
+                                                                            <i class="fas fa-arrow-right me-2"></i>@status
+                                                                        </button>
+                                                                    </form>
+                                                                </li>
+                                                            }
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Overlay -->
+<div class="modal-overlay" id="orderModalOverlay">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h5 class="modal-title mb-0"><i class="fas fa-file-invoice me-2"></i>Order Details</h5>
+            <button class="modal-close">×</button>
+        </div>
+        <div class="modal-body p-4" id="orderModalBody">
+            <!-- Order details will be loaded here -->
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Fallback for jQuery if not loaded in layout -->
+    <script>window.jQuery || document.write('<script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"><\/script>')</script>
+    <script>
+        // Ensure jQuery is available before running scripts
+        if (typeof jQuery === 'undefined') {
+            console.error('jQuery is not loaded. Please ensure jQuery is included in the layout.');
+        } else {
+            jQuery(document).ready(function($) {
+                // Prevent DataTables from initializing on this table
+                if ($.fn.DataTable) {
+                    // If DataTables is already initialized, destroy it
+                    if ($.fn.DataTable.isDataTable('#ordersTable')) {
+                        $('#ordersTable').DataTable().destroy();
+                    }
+                }
+
+                // View order details
+                $('.view-order').on('click', function(e) {
+                    e.preventDefault();
+                    const orderId = $(this).data('id');
+
+                    // Show loading indicator
+                    $('#orderModalBody').html(`
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-3">Loading order details...</p>
+                        </div>
+                    `);
+
+                    // Show modal
+                    $('#orderModalOverlay').addClass('active');
+
+                    // Load order details
+                    $.ajax({
+                        url: '@Url.Action("OrderDetails", "Status")',
+                        type: 'GET',
+                        data: { id: orderId },
+                        success: function(data) {
+                            $('#orderModalBody').html(data);
+                        },
+                        error: function() {
+                            $('#orderModalBody').html(`
+                                <div class="alert alert-danger text-center py-4">
+                                    <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                                    <h4>Failed to load order details</h4>
+                                    <p>Please try again later</p>
+                                </div>
+                            `);
+                        }
+                    });
+                });
+
+                // Close modal
+                $('.modal-close').click(function() {
+                    $('#orderModalOverlay').removeClass('active');
+                });
+
+                // Close modal when clicking outside
+                $('#orderModalOverlay').on('click', function(e) {
+                    if ($(e.target).is('#orderModalOverlay')) {
+                        $('#orderModalOverlay').removeClass('active');
+                    }
+                });
+
+                // Close with ESC key
+                $(document).keyup(function(e) {
+                    if (e.key === "Escape") {
+                        $('#orderModalOverlay').removeClass('active');
+                    }
+                });
+            });
+        }
+    </script>
+}
+
+@functions {
+    private string GetStatusBadgeClass(OrderStatus status)
+    {
+        return status switch
+        {
+            OrderStatus.Pending => "bg-pending",
+            OrderStatus.Paid => "bg-paid",
+            OrderStatus.Processing => "bg-processing",
+            OrderStatus.Shipped => "bg-shipped",
+            OrderStatus.Delivered => "bg-delivered",
+            OrderStatus.Cancelled => "bg-cancelled",
+            _ => "bg-secondary"
+        };
+    }
+}

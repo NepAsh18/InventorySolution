@@ -1,0 +1,51 @@
+﻿@using InventorySolution.Models.ViewModels
+@model VerifyEmailViewModel
+
+@{
+    ViewData["Title"] = "Password Recovery";
+    Layout = "~/Views/Shared/_AuthLayout.cshtml";
+}
+
+<form asp-action="VerifyEmail" method="post">
+    <h3>Password Recovery</h3>
+
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="form-wrapper">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+
+    <div class="form-wrapper">
+        <label asp-for="SecurityQuestion" class="form-label">Security Question</label>
+        <select asp-for="SecurityQuestion" class="form-control">
+            <option value="">Select your security question</option>
+            <option value="What's your pet name?">What's your pet name?</option>
+            <option value="What is your favourite book?">What is your favourite book?</option>
+            <option value="Which is the most exciting place you have traveled to recently?">Which is the most exciting place you have traveled to recently?</option>
+            <option value="What is your mother’s maiden name?">What is your mother’s maiden name?</option>
+            <option value="What was your childhood nickname?">What was your childhood nickname?</option>
+        </select>
+        <span asp-validation-for="SecurityQuestion" class="text-danger"></span>
+    </div>
+
+    <div class="form-wrapper">
+        <label asp-for="SecurityAnswer" class="form-label">Your Answer</label>
+        <input asp-for="SecurityAnswer" class="form-control" />
+        <span asp-validation-for="SecurityAnswer" class="text-danger"></span>
+    </div>
+
+    <button type="submit">Verify Identity</button>
+
+    <div class="text-center mt-3">
+        <a asp-action="Login" class="text-decoration-none">Back to Login</a>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

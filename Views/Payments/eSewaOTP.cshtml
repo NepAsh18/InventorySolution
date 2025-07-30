@@ -1,0 +1,74 @@
+﻿@model InventorySolution.Models.ViewModels.PaymentViewModel
+
+<style>
+    .payment-header {
+        background: linear-gradient(135deg, #53a653, #3d7e3d); /* eSewa green gradient */
+        color: white;
+    }
+
+    .payment-btn-success {
+        background: linear-gradient(135deg, #53a653, #3d7e3d); /* eSewa green gradient */
+        border: none;
+    }
+
+        .payment-btn-success:hover {
+            background: linear-gradient(135deg, #3d7e3d, #53a653); /* Darker green on hover */
+        }
+
+    .otp-input {
+        letter-spacing: 10px;
+        font-size: 24px;
+        height: 60px;
+        text-align: center;
+    }
+</style>
+
+<div class="payment-modal-header text-center py-4 payment-header">
+    <img src="https://esewa.com.np/common/images/esewa_logo.png" alt="eSewa Logo" class="payment-logo" style="height: 50px;">
+    <h4 class="mt-3">eSewa OTP Verification</h4>
+</div>
+
+<div class="payment-modal-body p-4">
+    @if (!string.IsNullOrEmpty(Model.Error))
+    {
+        <div class="alert alert-danger">@Model.Error</div>
+    }
+
+    <div class="text-center mb-4">
+        <i class="bi bi-phone" style="font-size: 3rem; color: #53a653;"></i> <!-- Green phone icon -->
+        <p class="mt-3">OTP has been sent to your registered device</p>
+        <p class="text-muted">Enter the 6-digit code to complete your payment</p>
+    </div>
+
+    <form method="post" action="@Url.Action("VerifyOTP", "Payment")">
+        <input type="hidden" name="method" value="@Model.Method" />
+        <input type="hidden" name="orderId" value="@Model.OrderId" />
+
+        <div class="mb-4">
+            <input type="text" name="otp" class="form-control otp-input" placeholder="••••••" maxlength="6" required>
+        </div>
+
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-lg payment-btn-success text-white">
+                <i class="bi bi-check-circle me-2"></i> Confirm Payment
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-lg cancel-payment" data-orderid="@Model.OrderId">
+                <i class="bi bi-x-circle me-2"></i> Cancel Payment
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="payment-modal-footer text-center p-3">
+    <small class="text-muted">Secure payment by eSewa</small>
+    @if (Model.AttemptsLeft < 3)
+    {
+        <div class="mt-2 text-danger">Attempts left: <strong>@Model.AttemptsLeft</strong></div>
+    }
+</div>
+
+<script>
+    document.querySelector('.otp-input').addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '');
+    });
+</script>

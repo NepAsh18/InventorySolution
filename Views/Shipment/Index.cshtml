@@ -1,0 +1,91 @@
+﻿@using InventorySolution.Models.ViewModels
+@model List<ShipmentViewModel>
+
+@{
+    ViewData["Title"] = "Shipment Management";
+    Layout = "_AdminLayout";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Shipment Management</h1>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Warehouse</th>
+                        <th>Destination</th>
+                        <th>Status</th>
+                        <th>Progress</th>
+                        <th>Order Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var shipment in Model)
+                    {
+                        <tr>
+                            <td>#@shipment.OrderId</td>
+                            <td>@shipment.CustomerName</td>
+                            <td>@shipment.Warehouse</td>
+                            <td>@shipment.CustomerLocation</td>
+                            <td>
+                                <span class="badge @GetStatusBadgeClass(shipment.Status)">
+                                    @shipment.Status
+                                </span>
+                            </td>
+                            <td>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar @GetProgressBarClass(shipment.Status)"
+                                         role="progressbar"
+                                         style="width: @shipment.ProgressPercentage%"
+                                         aria-valuenow="@shipment.ProgressPercentage"
+                                         aria-valuemin="0"
+                                         aria-valuemax="100"></div>
+                                </div>
+                            </td>
+                            <td>@shipment.OrderDate.ToString("d MMM yyyy")</td>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@shipment.OrderId"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetStatusBadgeClass(OrderStatus status)
+    {
+        return status switch
+        {
+            OrderStatus.Pending => "bg-secondary",
+            OrderStatus.Processing => "bg-info",
+            OrderStatus.Shipped => "bg-primary",
+            OrderStatus.Delivered => "bg-success",
+            _ => "bg-secondary"
+        };
+    }
+
+    string GetProgressBarClass(OrderStatus status)
+    {
+        return status switch
+        {
+            OrderStatus.Pending => "bg-secondary",
+            OrderStatus.Processing => "bg-info",
+            OrderStatus.Shipped => "bg-primary",
+            OrderStatus.Delivered => "bg-success",
+            _ => "bg-secondary"
+        };
+    }
+}

@@ -1,0 +1,720 @@
+﻿@model InventorySolution.Models.CustomerView.CheckoutViewModel
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Checkout</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary: #56DFCF;
+            --secondary: #708A58;
+            --accent: #FCEF91;
+            --light: #F8FAFC;
+            --dark: #2D3748;
+        }
+
+        body {
+            background-color: var(--light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .checkout-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 30px;
+            border-radius: 15px;
+            color: white;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+            .card:hover {
+                transform: translateY(-5px);
+            }
+
+        .card-header {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            font-weight: 600;
+            padding: 15px 20px;
+            border-radius: 15px 15px 0 0 !important;
+        }
+
+        .card-body {
+            padding: 25px;
+        }
+
+        .form-select {
+            border-radius: 10px;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+        }
+
+            .form-select:focus {
+                border-color: var(--primary);
+                box-shadow: 0 0 0 3px rgba(86, 223, 207, 0.2);
+            }
+
+        .payment-option {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+            .payment-option:hover {
+                border-color: var(--primary);
+                background-color: rgba(86, 223, 207, 0.05);
+            }
+
+            .payment-option.selected {
+                border-color: var(--primary);
+                background-color: rgba(86, 223, 207, 0.1);
+            }
+
+            .payment-option input[type="radio"] {
+                width: 20px;
+                height: 20px;
+                margin-top: 5px;
+            }
+
+        .btn-primary {
+            background: linear-gradient(to right, var(--secondary), var(--primary));
+            border: none;
+            border-radius: 50px;
+            padding: 15px 30px;
+            font-weight: 600;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+            .btn-primary:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 7px 15px rgba(86, 223, 207, 0.3);
+            }
+
+        .order-item {
+            border-bottom: 1px solid #e2e8f0;
+            padding: 15px 0;
+        }
+
+            .order-item:last-child {
+                border-bottom: none;
+            }
+
+        .summary-value {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .total-row {
+            background-color: rgba(112, 138, 88, 0.1);
+            padding: 12px 15px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .info-alert {
+            background-color: var(--accent);
+            border-radius: 12px;
+            border: none;
+            color: #5c4813;
+            padding: 15px;
+        }
+
+        .location-fee-section {
+            background-color: rgba(86, 223, 207, 0.1);
+            border-radius: 12px;
+            padding: 10px 15px;
+            margin-top: 10px;
+        }
+
+        .location-fee {
+            font-weight: 600;
+            color: var(--secondary);
+        }
+
+        @@media (max-width: 768px) {
+            .checkout-container {
+                padding: 15px;
+            }
+
+            .header {
+                padding: 20px;
+                text-align: center;
+            }
+
+            .card-body {
+                padding: 20px;
+            }
+        }
+
+        .esewa-logo {
+            height: 28px;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        .secure-badge {
+            background-color: rgba(112, 138, 88, 0.2);
+            color: var(--secondary);
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+
+        .progress-container {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin-bottom: 40px;
+            max-width: 800px;
+            margin: 0 auto 40px;
+        }
+
+        .progress-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1;
+        }
+
+        .step-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #94a3b8;
+        }
+
+            .step-icon.active {
+                border-color: var(--primary);
+                background: var(--primary);
+                color: white;
+            }
+
+            .step-icon.completed {
+                border-color: var(--secondary);
+                background: var(--secondary);
+                color: white;
+            }
+
+        .step-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            text-align: center;
+        }
+
+            .step-label.active {
+                color: var(--secondary);
+                font-weight: 600;
+            }
+
+        .progress-bar-bg {
+            position: absolute;
+            top: 25px;
+            left: 10%;
+            right: 10%;
+            height: 4px;
+            background: #e2e8f0;
+            z-index: 0;
+        }
+
+        .progress-bar-fill {
+            position: absolute;
+            top: 25px;
+            left: 10%;
+            width: 66%;
+            height: 4px;
+            background: var(--secondary);
+            z-index: 0;
+            transition: width 0.5s ease;
+        }
+
+        /* Payment Modal Styles */
+        .payment-modal-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1050;
+        }
+
+        .payment-modal-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .payment-modal-header {
+            background: linear-gradient(to right, #2c6bed, #1a4fad);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .payment-modal-body {
+            padding: 25px;
+        }
+
+        .payment-modal-footer {
+            background-color: #f8f9fa;
+            padding: 15px;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .payment-logo {
+            height: 40px;
+            margin-bottom: 15px;
+        }
+
+        .otp-input {
+            text-align: center;
+            font-size: 24px;
+            letter-spacing: 10px;
+            font-weight: bold;
+            height: 60px;
+        }
+
+        .payment-btn {
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            margin-top: 10px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .attempts-count {
+            font-weight: bold;
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="checkout-container">
+        <!-- Progress indicator -->
+        <div class="progress-container">
+            <div class="progress-bar-bg"></div>
+            <div class="progress-bar-fill"></div>
+
+            <div class="progress-step">
+                <div class="step-icon completed">
+                    <i class="bi bi-cart"></i>
+                </div>
+                <div class="step-label">Cart</div>
+            </div>
+
+            <div class="progress-step">
+                <div class="step-icon completed">
+                    <i class="bi bi-person"></i>
+                </div>
+                <div class="step-label">Details</div>
+            </div>
+
+            <div class="progress-step">
+                <div class="step-icon active">
+                    <i class="bi bi-credit-card"></i>
+                </div>
+                <div class="step-label active">Payment</div>
+            </div>
+
+            <div class="progress-step">
+                <div class="step-icon">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="step-label">Confirmation</div>
+            </div>
+        </div>
+
+        <div class="header text-center">
+            <h1 class="display-5 fw-bold mb-3">Secure Checkout</h1>
+            <p class="lead">Complete your purchase in just a few steps</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Order Details Column -->
+            <div class="col-lg-7">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-receipt me-2"></i>Order Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="PlaceOrder" method="post" id="checkoutForm">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="IsDirectCheckout" value="@Model.IsDirectCheckout" />
+
+                            <!-- Preserve cart items for direct checkout -->
+                            @if (Model.IsDirectCheckout)
+                            {
+                                @for (var i = 0; i < Model.Cart.Items.Count; i++)
+                                {
+                                    <input type="hidden" asp-for="Cart.Items[i].ProductId" />
+                                    <input type="hidden" asp-for="Cart.Items[i].Name" />
+                                    <input type="hidden" asp-for="Cart.Items[i].Quantity" />
+                                    <input type="hidden" asp-for="Cart.Items[i].BasePrice" />
+                                    <input type="hidden" asp-for="Cart.Items[i].FinalPrice" />
+                                    <input type="hidden" asp-for="Cart.Items[i].ImagePath" />
+                                }
+                                <input type="hidden" asp-for="Cart.Total" />
+                            }
+
+                            <!-- Pickup Location Section -->
+                            <div class="mb-4">
+                                <h6 class="fw-bold mb-3"><i class="bi bi-geo-alt me-2"></i>Pickup Location</h6>
+                                <select asp-for="LocationId" id="locationId" class="form-select form-select-lg location-select"
+                                        asp-items="ViewBag.Locations" required>
+                                    <option value="">Select a location</option>
+                                </select>
+                                <div class="location-fee-section mt-3">
+                                    <span class="text-muted">Location Fee: </span>
+                                    <span class="fw-medium location-fee">Rs. 0.00</span>
+                                </div>
+                            </div>
+
+                            <!-- Payment Method Section -->
+                            <div class="mb-4">
+                                <h6 class="fw-bold mb-3"><i class="bi bi-credit-card me-2"></i>Payment Method</h6>
+
+                                <div class="payment-option selected" data-method="Cash">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" asp-for="PaymentMethod" value="Cash" id="cash" checked>
+                                        <label class="form-check-label fw-medium w-100" for="cash">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <i class="bi bi-cash-coin me-2"></i> Cash on Delivery
+                                                </div>
+                                                <div>
+                                                    <span class="secure-badge">Pay when you receive</span>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="payment-option" data-method="Khalti">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" asp-for="PaymentMethod" value="Khalti" id="khalti">
+                                        <label class="form-check-label fw-medium w-100" for="khalti">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <i class="bi bi-wallet me-2"></i> Pay with Khalti
+                                                </div>
+                                                <div>
+                                                    <span class="secure-badge">Secure Payment</span>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="payment-option" data-method="eSewa">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" asp-for="PaymentMethod" value="eSewa" id="esewa">
+                                        <label class="form-check-label fw-medium w-100" for="esewa">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <i class="bi bi-credit-card me-2"></i> Pay with eSewa
+                                                </div>
+                                                <div>
+                                                    <span class="secure-badge">Secure Payment</span>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Complete Order Button -->
+                            <div class="d-grid mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg" id="submitButton">
+                                    <i class="bi bi-check-circle me-2"></i> Complete Order
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary Column -->
+            <div class="col-lg-5">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-cart-check me-2"></i>Order Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            @foreach (var item in Model.Cart.Items)
+                            {
+                                <div class="order-item">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="mb-1 fw-medium">@item.Name</h6>
+                                            <div class="d-flex text-muted">
+                                                <small>@item.Quantity × Rs. @item.BasePrice.ToString("0.00")</small>
+                                            </div>
+                                        </div>
+                                        <div class="fw-bold text-primary">Rs. @((item.Quantity * item.FinalPrice).ToString("0.00"))</div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="d-flex justify-content-between py-2">
+                            <span class="text-muted">Subtotal:</span>
+                            <span class="summary-value">Rs. @Model.Cart.Total.ToString("0.00")</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between py-2">
+                            <span class="text-muted">Location Fee:</span>
+                            <span class="summary-value" id="location-fee">Rs. 0.00</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between py-3 fw-bold total-row">
+                            <span>Total:</span>
+                            <span id="total-with-fee">Rs. @Model.Cart.Total.ToString("0.00")</span>
+                        </div>
+
+                        <div class="info-alert mt-4">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Your order will be ready for pickup at the selected location within 2 hours
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal Container -->
+    <div id="paymentModalContainer" class="payment-modal-container" style="display: none;">
+        <div class="payment-modal-content" id="paymentModalContent">
+            <!-- Payment interface will be loaded here -->
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Location fee calculation
+            $('.location-select').change(function() {
+                var locationId = $(this).val();
+                if (locationId) {
+                    $.get('/Checkout/GetLocationFee', { locationId: locationId }, function(data) {
+                        $('.location-fee').text('Rs. ' + data.fee.toFixed(2));
+                        $('#location-fee').text('Rs. ' + data.fee.toFixed(2));
+
+                        var total = @Model.Cart.Total + data.fee;
+                        $('#total-with-fee').text('Rs. ' + total.toFixed(2));
+                    }).fail(function(xhr) {
+                        console.error('Error getting location fee:', xhr.responseText);
+                        alert('Failed to get location fee. Please try again.');
+                    });
+                } else {
+                    $('.location-fee').text('Rs. 0.00');
+                    $('#location-fee').text('Rs. 0.00');
+                    $('#total-with-fee').text('Rs. @Model.Cart.Total.ToString("0.00")');
+                }
+            });
+
+            // Payment method selection
+            $('.payment-option').click(function() {
+                $('.payment-option').removeClass('selected');
+                $(this).addClass('selected');
+                $(this).find('input[type="radio"]').prop('checked', true);
+            });
+
+            // Form submission handling
+            $('#checkoutForm').on('submit', function(e) {
+                const paymentMethod = $('input[name="PaymentMethod"]:checked').val();
+
+                // For cash payments, submit normally
+                if (paymentMethod === 'Cash') {
+                    return true;
+                }
+
+                e.preventDefault();
+
+                // Submit form via AJAX to create the order
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        if (response.requiresPayment) {
+                            // For online payments, show payment modal
+                            loadPaymentStep(response.paymentMethod, response.orderId);
+                        } else if (response.redirectUrl) {
+                            // For cash payments, redirect to confirmation
+                            window.location.href = response.redirectUrl;
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Order creation failed:', xhr.responseText);
+                        alert('Failed to create order. Please try again.');
+                    }
+                });
+            });
+        });
+
+        // Load the appropriate payment step
+        function loadPaymentStep(method, orderId) {
+            $.ajax({
+                url: '/Payment/InitiatePayment',
+                type: 'GET',
+                data: {
+                    method: method,
+                    orderId: orderId
+                },
+                success: function(response) {
+                    $('#paymentModalContent').html(response);
+                    $('#paymentModalContainer').show();
+
+                    // Attach form handlers
+                    attachPaymentHandlers();
+                },
+                error: function(xhr) {
+                    console.error('Error loading payment interface:', xhr.responseText);
+                    alert('Error loading payment interface. Please try again.');
+                }
+            });
+        }
+
+        // Attach event handlers for payment forms
+        function attachPaymentHandlers() {
+            // Handle login form submission
+            $('form').on('submit', function(e) {
+                e.preventDefault();
+                const form = $(this);
+                const action = form.attr('action');
+                const method = form.attr('method') || 'POST';
+
+                $.ajax({
+                    url: action,
+                    type: method,
+                    data: form.serialize(),
+                    success: function(response) {
+                        if (response.success && response.redirectUrl) {
+                            // Redirect to confirmation page on success
+                            window.location.href = response.redirectUrl;
+                        } else if (response.redirectUrl) {
+                            // Redirect to checkout on failure
+                            window.location.href = response.redirectUrl;
+                        } else {
+                            // Update modal content with new form
+                            $('#paymentModalContent').html(response);
+                            attachPaymentHandlers(); // Reattach handlers for the new content
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Error processing payment step:', xhr.responseText);
+                        alert('Error processing payment step. Please try again.');
+                    }
+                });
+            });
+
+            // Handle cancel payment button
+            $('.cancel-payment').on('click', function() {
+                const orderId = $(this).data('orderid');
+
+                if (confirm('Are you sure you want to cancel this payment?')) {
+                    $.ajax({
+                        url: '/Payment/CancelPayment',
+                        type: 'POST',
+                        data: { orderId: orderId },
+                        headers: {
+                            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function(response) {
+                            if (response.redirectUrl) {
+                                window.location.href = response.redirectUrl;
+                            } else {
+                                alert(response.error || 'Payment cancelled successfully');
+                            }
+                        },
+                        error: function(xhr) {
+                            console.error('Error cancelling payment:', xhr.responseText);
+                            alert('Error cancelling payment. Please try again.');
+                        }
+                    });
+                }
+            });
+
+            // Toggle password visibility
+            $('#togglePassword').on('click', function() {
+                const passwordField = $('#mpinField');
+                const icon = $(this).find('i');
+
+                if (passwordField.attr('type') === 'password') {
+                    passwordField.attr('type', 'text');
+                    icon.removeClass('bi-eye').addClass('bi-eye-slash');
+                } else {
+                    passwordField.attr('type', 'password');
+                    icon.removeClass('bi-eye-slash').addClass('bi-eye');
+                }
+            });
+
+            // Format OTP input
+            $('.otp-input').on('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+        }
+
+        // Close payment modal
+        function closePaymentModal() {
+            $('#paymentModalContainer').hide();
+            $('#paymentModalContent').empty();
+        }
+    </script>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
+</body>
+</html>

@@ -1,0 +1,111 @@
+﻿@using InventorySolution.Models.Entities
+@model IEnumerable<Product>
+@{
+    ViewData["Title"] = "Product List";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mt-4">
+            <i class="bi bi-card-checklist me-2"></i>Product List
+        </h1>
+        <div>
+            <a asp-action="ExportToExcel" class="btn btn-success">
+                <i class="bi bi-file-earmark-excel"></i> Export to Excel
+            </a>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-darkpurple text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-search me-1"></i> Search Products</span>
+                <small>
+                    Sorted by: <span class="badge bg-light text-dark">Name</span>
+                </small>
+            </div>
+        </div>
+        <div class="card-body">
+            <form asp-action="Index" method="get">
+                <div class="input-group">
+                    <input type="text" name="searchString" class="form-control"
+                           placeholder="Search by product name..." value="@ViewBag.SearchString">
+                    <button class="btn btn-purple" type="submit">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Clear
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Price (Rs.)</th>
+                            <th>Quantity</th>
+                            <th>Expiry Date</th>
+                            <th>Category</th>
+                            <th>Unit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            var isExpired = item.ExpiryDate < DateTime.Today;
+                            <tr class="@(item.Quantity < item.ReorderLevel ? "table-warning" : "")
+                                           @(isExpired ? "table-danger" : "")">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <strong>@item.Name</strong>
+                                        @if (isExpired)
+                                        {
+                                            <span class="badge bg-danger ms-2">Expired</span>
+                                        }
+                                    </div>
+                                </td>
+                                <td>Rs. @item.Price.ToString("N2")</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        @item.Quantity
+                                        @if (item.Quantity < item.ReorderLevel)
+                                        {
+                                            <span class="badge bg-warning ms-1">Low Stock</span>
+                                        }
+                                    </div>
+                                </td>
+                                <td>@item.ExpiryDate.ToString("dd MMM yyyy")</td>
+                                <td>@(item.Category?.Name ?? "N/A")</td>
+                                <td>@(item.UnitMeasure?.Name ?? "N/A")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                @if (!Model.Any())
+                {
+                    <div class="alert alert-info text-center py-4">
+                        <i class="bi bi-info-circle me-2"></i> No products found
+                        @if (!string.IsNullOrEmpty(ViewBag.SearchString))
+                        {
+                            <span>matching your search criteria.</span>
+                        }
+                        else
+                        {
+                            <span>in the inventory.</span>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Removed the duplicate badge JavaScript -->

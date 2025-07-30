@@ -1,0 +1,169 @@
+﻿@using InventorySolution.Models.ViewModels
+@model RegisterViewModel
+
+@{
+    ViewData["Title"] = "Register";
+    Layout = "~/Views/Shared/_AuthLayout.cshtml";
+}
+
+<form asp-action="Register" method="post">
+    <h3>Create Account</h3>
+
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="form-wrapper">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <!-- Email field with enhanced validation -->
+    <div class="form-wrapper">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" id="emailInput" />
+        <span asp-validation-for="Email" class="text-warning"></span>
+        <div class="form-text text-warning mt-1" id="emailWarning">
+            <i class="fas fa-exclamation-triangle"></i> Must be a valid Gmail address (e.g., user@gmail.com)
+        </div>
+        <div class="form-text text-danger mt-1" id="gmailAlert" style="display: none;">
+            <i class="fas fa-exclamation-circle"></i> Only Gmail addresses are allowed!
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="form-wrapper">
+            <label asp-for="Password" class="form-label"></label>
+            <input asp-for="Password" type="password" class="form-control" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+        <div class="form-wrapper">
+            <label asp-for="ConfirmPassword" class="form-label"></label>
+            <input asp-for="ConfirmPassword" type="password" class="form-control" />
+            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="form-wrapper">
+        <label asp-for="SecurityQuestion" class="form-label">Security Question</label>
+        <select asp-for="SecurityQuestion" class="form-control">
+            <option value="">Select a security question</option>
+            @foreach (var question in Model.AvailableSecurityQuestions)
+            {
+                <option value="@question">@question</option>
+            }
+        </select>
+        <span asp-validation-for="SecurityQuestion" class="text-danger"></span>
+    </div>
+
+    <div class="form-wrapper">
+        <label asp-for="SecurityAnswer" class="form-label">Security Answer</label>
+        <input asp-for="SecurityAnswer" class="form-control" />
+        <span asp-validation-for="SecurityAnswer" class="text-danger"></span>
+    </div>
+
+    <button type="submit">Register</button>
+
+    <div class="text-center mt-3">
+        <p class="mb-0">
+            Already have an account?
+            <a asp-action="Login" class="text-decoration-none">Sign In</a>
+        </p>
+        <a asp-controller="Home" asp-action="Index" class="text-decoration-none">Back to Home</a>
+    </div>
+</form>
+
+@section Styles {
+    <style>
+        /* Custom warning styles */
+        .text-warning {
+            color: #ff9800 !important;
+        }
+
+        .text-danger {
+            color: #dc3545 !important;
+        }
+
+        .form-text {
+            font-size: 0.85rem;
+        }
+
+            .form-text.text-warning,
+            .form-text.text-danger {
+                display: none; /* Initially hidden */
+            }
+
+        .is-invalid {
+            border-color: #dc3545;
+        }
+
+        .is-valid {
+            border-color: #28a745;
+        }
+
+        .validation-summary-errors ul {
+            padding-left: 0;
+            list-style: none;
+        }
+    </style>
+}
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+    <script>
+        $(document).ready(function() {
+            const emailInput = $('#emailInput');
+            const emailWarning = $('#emailWarning');
+            const gmailAlert = $('#gmailAlert');
+
+            // Initial check on page load
+            validateEmail();
+
+            // Real-time validation on input
+            emailInput.on('input', validateEmail);
+
+            function validateEmail() {
+                const email = emailInput.val().trim();
+                const generalRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+                const isGmail = /@@gmail\.com$/i.test(email);
+
+                // Hide all warnings initially
+                emailWarning.hide();
+                gmailAlert.hide();
+                emailInput.removeClass('is-invalid is-valid');
+
+                if (email.length === 0) {
+                    return; // No validation for empty field
+                }
+
+                if (!generalRegex.test(email)) {
+                    // Invalid email format
+                    emailWarning.show();
+                    emailInput.addClass('is-invalid');
+                } else if (!isGmail) {
+                    // Valid format but not Gmail
+                    gmailAlert.show();
+                    emailInput.addClass('is-invalid');
+                } else {
+                    // Valid Gmail address
+                    emailInput.addClass('is-valid');
+                }
+            }
+
+            // Clear validation on form reset
+            $('form').on('reset', function() {
+                setTimeout(() => {
+                    emailWarning.hide();
+                    gmailAlert.hide();
+                    emailInput.removeClass('is-invalid is-valid');
+                }, 0);
+            });
+        });
+    </script>
+}

@@ -1,0 +1,217 @@
+﻿@using InventorySolution.Data
+@using InventorySolution.Models.CustomerView
+@using InventorySolution.Services
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext _context
+@inject ISearchService _searchService
+@{
+    var categories = await _context.Categories.ToListAsync();
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Shop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="~/css/customer.css" asp-append-version="true" />
+</head>
+<body class="customer-body">
+    <!-- Top Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-mint shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">
+                <i class="bi bi-shop"></i> Inventory Shop
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" asp-controller="Home" asp-action="Index">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="CustomerProduct" asp-action="Index">Products</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="categoriesDropdown" role="button"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-grid me-1"></i> Categories
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="categoriesDropdown">
+                            @foreach (var category in categories)
+                            {
+                                <li>
+                                    <a class="dropdown-item" asp-controller="CustomerCategory"
+                                       asp-action="Index" asp-route-id="@category.Id">
+                                        @category.Name
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Contact</a>
+                    </li>
+                </ul>
+
+                <div class="d-flex">
+                    <form asp-controller="CustomerProduct" asp-action="Index" method="get" class="d-flex me-3">
+                        <div class="input-group">
+                            <input type="text" name="searchString" class="form-control"
+                                   placeholder="Search products..." value="@ViewBag.SearchString">
+                            <button class="btn btn-outline-mint" type="submit">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </form>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="cartDropdown" role="button"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-cart3"></i>
+                            @{
+                                var cart = Context.Session.Get<Cart>("Cart") ?? new Cart();
+                                var itemCount = cart.Items.Sum(i => i.Quantity);
+                            }
+                            @if (itemCount > 0)
+                            {
+                                <span class="badge bg-danger">@itemCount</span>
+                            }
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="cartDropdown" style="width: 300px;">
+                            <li>
+                                <div class="px-3 py-2">
+                                    <h6 class="fw-bold">Your Cart</h6>
+                                    <div class="dropdown-divider"></div>
+
+                                    @if (cart.Items.Any())
+                                    {
+                                        @foreach (var item in cart.Items.Take(3))
+                                        {
+                                            <div class="cart-item d-flex justify-content-between py-2">
+                                                <div>
+                                                    <h6 class="mb-0">@item.Name</h6>
+                                                    <small class="text-muted">@item.Quantity x Rs @item.FinalPrice.ToString("N2")</small>
+                                                </div>
+                                                <div class="d-flex align-items-center">
+                                                    <span>Rs @item.Total.ToString("N2")</span>
+                                                </div>
+                                            </div>
+                                        }
+
+                                        @if (cart.Items.Count > 3)
+                                        {
+                                            <div class="text-center py-2">
+                                                + @(cart.Items.Count - 3) more items
+                                            </div>
+                                        }
+
+                                        <div class="dropdown-divider"></div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Total:</span>
+                                            <strong>Rs @cart.Total.ToString("N2")</strong>
+                                        </div>
+                                        <div class="d-grid gap-2">
+                                            <a asp-controller="Cart" asp-action="Index" class="btn btn-mint">View Cart</a>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-center my-2">Your cart is empty</p>
+                                    }
+                                </div>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <div class="dropdown ms-3">
+                        <button class="btn btn-outline-mint dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a asp-controller="MyProfile" asp-action="Index" class="dropdown-item"><i class="bi bi-person"></i> My Account</a></li>
+                           
+                            <li><a asp-controller="CustomerProduct" asp-action="OrderHistory" class="dropdown-item"><i class="bi bi-clock-history"></i> Order History</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <!-- Customer-specific logout button -->
+                                <form asp-controller="Account" asp-action="Logout" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-customer-logout">
+                                        <i class="fas fa-sign-out-alt"></i> Sign Out
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container my-4">
+        @RenderBody()
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white text-dark py-4 mt-4 border-top">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3">
+                    <h5>Inventory Shop</h5>
+                    <p class="text-muted">Your one-stop shop for all inventory needs.</p>
+                </div>
+                <div class="col-md-3">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-decoration-none text-mint">Home</a></li>
+                        <li><a href="#" class="text-decoration-none text-mint">Products</a></li>
+                        <li><a href="#" class="text-decoration-none text-mint">About Us</a></li>
+                        <li><a href="#" class="text-decoration-none text-mint">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5>Customer Service</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-decoration-none text-mint">FAQs</a></li>
+                        <li><a href="#" class="text-decoration-none text-mint">Shipping Policy</a></li>
+                        <li><a href="#" class="text-decoration-none text-mint">Returns & Refunds</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5>Stay Connected</h5>
+                    <div class="social-icons">
+                        <a href="#" class="text-decoration-none text-mint me-2"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="text-decoration-none text-mint me-2"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="text-decoration-none text-mint me-2"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="text-decoration-none text-mint"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                    <p class="mt-2 text-muted">Subscribe to our newsletter</p>
+                    <div class="input-group mb-3">
+                        <input type="email" class="form-control" placeholder="Your email">
+                        <button class="btn btn-mint" type="button">Subscribe</button>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="text-center text-muted">
+                <small>&copy; @DateTime.Now.Year Inventory System. All rights reserved.</small>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/customer.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

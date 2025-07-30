@@ -1,0 +1,77 @@
+﻿@model List<Notification>
+
+<div class="notification-dropdown">
+    <div class="notification-header">
+        <h6 class="mb-0">Notifications</h6>
+        @if (Model.Any(n => !n.IsRead))
+        {
+            <button id="mark-all-read" class="btn btn-sm btn-link p-0 text-primary">
+                Mark all read
+            </button>
+        }
+    </div>
+
+    <div class="notification-list">
+        @if (Model.Any())
+        {
+            foreach (var notification in Model)
+            {
+                <div class="notification-item @(notification.IsRead ? "read" : "unread")"
+                     data-id="@notification.Id"
+                     data-url="@GetNotificationUrl(notification)">
+                    <div class="notification-icon">
+                        @switch (notification.Type)
+                        {
+                            case "NewCustomer":
+                                <i class="bi bi-person-plus-fill"></i>
+                                break;
+                            case "OrderPlaced":
+                                <i class="bi bi-cart-check-fill"></i>
+                                break;
+                            case "OrderCancelled":
+                                <i class="bi bi-x-circle-fill"></i>
+                                break;
+                            case "OrderCompleted":
+                                <i class="bi bi-check-circle-fill"></i>
+                                break;
+                            case "OrderStatusChanged":
+                                <i class="bi bi-arrow-repeat"></i>
+                                break;
+                            default:
+                                <i class="bi bi-bell-fill"></i>
+                                break;
+                        }
+                    </div>
+                    <div class="notification-content">
+                        <p class="mb-0">@notification.Message</p>
+                        <small class="text-muted">@notification.CreatedAt.ToString("g")</small>
+                    </div>
+                    <button class="mark-read-btn btn btn-sm p-0" data-id="@notification.Id">
+                        <i class="bi bi-check-lg"></i>
+                    </button>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="notification-empty text-center py-3">
+                <i class="bi bi-check2-circle fs-1 text-muted"></i>
+                <p class="mb-0">All caught up!</p>
+                <small class="text-muted">No new notifications</small>
+            </div>
+        }
+    </div>
+</div>
+
+@functions {
+    private string GetNotificationUrl(Notification notification)
+    {
+        return notification.Type switch
+        {
+            "OrderPlaced" or "OrderCancelled" or "OrderCompleted" or "OrderStatusChanged"
+                => Url.Action("OrderDetails", "Status", new { id = notification.RelatedEntityId }),
+            "NewCustomer" => Url.Action("Index", "AdminCustomer"),
+            _ => "#"
+        };
+    }
+}

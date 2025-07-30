@@ -1,0 +1,301 @@
+﻿@model InventorySolution.Models.CustomerView.Cart
+
+<style>
+    .cart-container {
+        background-color: #FFFFFF;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        padding: 30px;
+        margin-bottom: 40px;
+    }
+    
+    .cart-header {
+        padding-bottom: 20px;
+        border-bottom: 2px solid #56DFCF;
+        margin-bottom: 30px;
+    }
+    
+    .cart-item {
+        display: flex;
+        align-items: center;
+        padding: 20px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .cart-item-image {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 10px;
+        margin-right: 20px;
+    }
+    
+    .cart-item-details {
+        flex-grow: 1;
+    }
+    
+    .cart-item-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 5px;
+    }
+    
+    .cart-item-price {
+        color: #e74c3c;
+        font-weight: 700;
+    }
+    
+    .cart-item-quantity {
+        display: flex;
+        align-items: center;
+        margin-top: 10px;
+    }
+    
+    .quantity-input {
+        width: 60px;
+        text-align: center;
+        padding: 5px;
+        border: 2px solid #56DFCF;
+        border-radius: 8px;
+        margin: 0 10px;
+    }
+    
+    .btn-quantity {
+        background-color: #56DFCF;
+        color: white;
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .btn-quantity:hover {
+        background-color: #3EC7B5;
+    }
+    
+    .btn-remove {
+        background-color: #FCECDD;
+        color: #e74c3c;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 8px;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+    
+    .btn-remove:hover {
+        background-color: #e74c3c;
+        color: white;
+    }
+    
+    .cart-summary {
+        background-color: #FFF2E0;
+        border-radius: 12px;
+        padding: 25px;
+        margin-top: 30px;
+    }
+    
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+    }
+    
+    .summary-total {
+        font-weight: 800;
+        font-size: 1.3rem;
+        color: #333;
+        border-top: 2px solid #56DFCF;
+        padding-top: 15px;
+        margin-top: 10px;
+    }
+    
+    .btn-checkout {
+        background: linear-gradient(to right, #56DFCF, #3EC7B5);
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 1.2rem;
+        width: 100%;
+        margin-top: 20px;
+        transition: all 0.3s;
+        box-shadow: 0 8px 20px rgba(86, 223, 207, 0.4);
+        cursor: pointer;
+    }
+    
+    .btn-checkout:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 25px rgba(86, 223, 207, 0.5);
+    }
+    
+    .empty-cart {
+        text-align: center;
+        padding: 50px 0;
+    }
+    
+    .empty-cart i {
+        font-size: 5rem;
+        color: #56DFCF;
+        margin-bottom: 20px;
+    }
+    
+    .continue-shopping {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        color: #495057;
+        padding: 10px 20px;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .continue-shopping:hover {
+        background-color: #e9ecef;
+        color: #212529;
+        text-decoration: none;
+    }
+    
+    .cart-title {
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0;
+    }
+    
+    .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+</style>
+
+<div class="container py-4">
+    <div class="header-container">
+        <h1 class="cart-title">Your Shopping Cart</h1>
+        <a asp-controller="CustomerProduct" asp-action="Index" class="continue-shopping">
+            <i class="bi bi-arrow-left me-2"></i> Continue Shopping
+        </a>
+    </div>
+    
+    <div class="cart-container">
+        @if (Model.Items.Any())
+        {
+            <div class="cart-items">
+                @foreach (var item in Model.Items)
+                {
+                    <div class="cart-item">
+                        @if (!string.IsNullOrEmpty(item.ImagePath))
+                        {
+                            <img src="@item.ImagePath" class="cart-item-image" alt="@item.Name">
+                        }
+                        else
+                        {
+                            <div class="cart-item-image bg-light d-flex align-items-center justify-content-center">
+                                <i class="bi bi-image text-muted fs-1"></i>
+                            </div>
+                        }
+                        <div class="cart-item-details">
+                            <h5 class="cart-item-name">@item.Name</h5>
+                            <div class="cart-item-price">
+                                Rs @item.FinalPrice.ToString("N2") <small class="text-muted">(Base: Rs @item.BasePrice.ToString("N2"))</small>
+                            </div>
+                            <div class="cart-item-quantity">
+                                <form asp-action="UpdateCart" method="post" class="d-inline">
+                                    <input type="hidden" name="productId" value="@item.ProductId" />
+                                    <button type="button" class="btn-quantity minus-btn">-</button>
+                                    <input type="number" name="quantity" class="quantity-input" value="@item.Quantity" min="1" readonly>
+                                    <button type="button" class="btn-quantity plus-btn">+</button>
+                                </form>
+                                <form asp-action="RemoveFromCart" method="post" class="d-inline ms-2">
+                                    <input type="hidden" name="productId" value="@item.ProductId" />
+                                    <button type="submit" class="btn-remove">Remove</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            
+            <div class="cart-summary">
+                @{
+                    var subtotal = Model.Items.Sum(i => i.BasePrice * i.Quantity);
+                    var discounts = subtotal - Model.Items.Sum(i => i.FinalPrice * i.Quantity);
+                }
+                <div class="summary-row">
+                    <span>Subtotal:</span>
+                    <span>Rs @subtotal.ToString("N2")</span>
+                </div>
+                <div class="summary-row">
+                    <span>Discounts:</span>
+                    <span class="text-success">- Rs @discounts.ToString("N2")</span>
+                </div>
+                <div class="summary-row summary-total">
+                    <span>Total:</span>
+                    <span>Rs @Model.Total.ToString("N2")</span>
+                </div>
+                
+                <form asp-action="Checkout" method="post">
+                    <button type="submit" class="btn-checkout">
+                        <i class="bi bi-bag-check me-2"></i> PROCEED TO CHECKOUT
+                    </button>
+                </form>
+            </div>
+        }
+        else
+        {
+            <div class="empty-cart">
+                <i class="bi bi-cart-x"></i>
+                <h3>Your cart is empty</h3>
+                <p class="text-muted">Start adding items to your cart</p>
+                <a asp-controller="CustomerProduct" asp-action="Index" class="btn btn-primary mt-3">
+                    Continue Shopping
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Quantity button functionality
+        document.querySelectorAll('.plus-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const form = this.closest('form');
+                const input = form.querySelector('.quantity-input');
+                input.value = parseInt(input.value) + 1;
+                form.submit();
+            });
+        });
+        
+        document.querySelectorAll('.minus-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const form = this.closest('form');
+                const input = form.querySelector('.quantity-input');
+                if (parseInt(input.value) > 1) {
+                    input.value = parseInt(input.value) - 1;
+                    form.submit();
+                }
+            });
+        });
+        
+        // Input change functionality
+        document.querySelectorAll('.quantity-input').forEach(input => {
+            input.addEventListener('change', function() {
+                if (parseInt(this.value) < 1) {
+                    this.value = 1;
+                }
+                this.closest('form').submit();
+            });
+        });
+    });
+</script>

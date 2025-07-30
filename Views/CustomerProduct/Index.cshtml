@@ -1,0 +1,128 @@
+﻿@using InventorySolution.Models.Entities
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<Product>
+@{
+    ViewData["Title"] = "Our Products";
+    Layout = "_CustomerLayout";
+}
+
+<style>
+    /* ... existing styles ... */
+
+    .product-price {
+        color: #e74c3c;
+        font-weight: 700;
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+    }
+    
+    /* Mint button styles */
+    .btn-mint {
+        background-color: #98FF98;
+        border-color: #98FF98;
+        color: #333;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-mint:hover {
+        background-color: #7CE68C;
+        border-color: #7CE68C;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    /* Pagination styling */
+    .pagination-container {
+        margin-top: 30px;
+        display: flex;
+        justify-content: center;
+    }
+    
+    .pagination li a {
+        margin: 0 5px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        padding: 6px 12px;
+        color: #3498db;
+        text-decoration: none;
+    }
+    
+    .pagination li.active a {
+        background: #3498db;
+        color: white;
+        border-color: #3498db;
+    }
+    
+    .pagination li.disabled a {
+        color: #ccc;
+        pointer-events: none;
+    }
+</style>
+
+<div class="container-main">
+    <div class="section-header">
+        <h1 class="section-title">Discover Our Products</h1>
+        <p class="text-muted">Find the perfect items for your needs</p>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <i class="bi bi-box-seam"></i>
+            <h3>No Products Available</h3>
+            <p class="text-muted">Check back later for new arrivals</p>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var product in Model)
+            {
+                <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+                    <div class="product-card">
+                        <div class="card-img-container">
+                            @if (!string.IsNullOrEmpty(product.ImagePath))
+                            {
+                                <img src="@product.ImagePath" class="card-img-top" alt="@product.Name">
+                            }
+                            else
+                            {
+                                <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                            }
+                        </div>
+                        <div class="card-body">
+                            <h5 class="product-title">@product.Name</h5>
+                            <span class="product-category">@product.Category?.Name</span>
+
+                            <!-- Price Display -->
+                            <div class="product-price">
+                                Rs @product.Price.ToString("N2")
+                            </div>
+
+                            <p class="product-description">@(product.Description.Length > 100 ? product.Description.Substring(0, 100) + "..." : product.Description)</p>
+                            <div class="product-stats">
+                                <span class="product-quantity">In Stock: @product.Quantity</span>
+                                <!-- Changed to mint button -->
+                                <a asp-action="Details" asp-route-id="@product.Id" class="btn btn-mint">
+                                    Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        
+        <!-- Pagination Controls -->
+        <div class="pagination-container">
+            @Html.PagedListPager(Model, page => Url.Action("Index", new { page }),
+                new PagedListRenderOptions {
+                    LiElementClasses = new[] { "page-item" },
+                    PageClasses = new[] { "page-link" },
+                    Display = PagedListDisplayMode.IfNeeded
+                })
+        </div>
+    }
+</div>

@@ -1,0 +1,429 @@
+﻿@model InventorySolution.Models.Entities.Order
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary: #56DFCF;
+            --secondary: #708A58;
+            --accent: #FCEF91;
+            --light: #F8FAFC;
+            --dark: #2D3748;
+        }
+
+        body {
+            background-color: var(--light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .confirmation-container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 20px;
+        }
+
+        .confirmation-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 40px 30px;
+            border-radius: 15px;
+            color: white;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .confirmation-header::before {
+                content: "";
+                position: absolute;
+                top: -50px;
+                right: -50px;
+                width: 200px;
+                height: 200px;
+                border-radius: 50%;
+                background: rgba(255,255,255,0.1);
+            }
+
+            .confirmation-header::after {
+                content: "";
+                position: absolute;
+                bottom: -30px;
+                left: -30px;
+                width: 150px;
+                height: 150px;
+                border-radius: 50%;
+                background: rgba(255,255,255,0.1);
+            }
+
+        .check-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+            display: inline-block;
+            animation: bounce 1s ease-in-out;
+        }
+
+        @@keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        .confirmation-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+            overflow: hidden;
+            background: white;
+        }
+
+        .card-section {
+            padding: 30px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+            .card-section:last-child {
+                border-bottom: none;
+            }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .icon-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(86, 223, 207, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+
+            .icon-circle i {
+                font-size: 1.8rem;
+                color: var(--primary);
+            }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .info-item {
+            padding: 20px;
+            border-radius: 12px;
+            background: rgba(112, 138, 88, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+            .info-item:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--secondary);
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .info-value {
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .total-section {
+            background: linear-gradient(135deg, rgba(86, 223, 207, 0.1), rgba(112, 138, 88, 0.1));
+            border-radius: 12px;
+            padding: 25px;
+        }
+
+        .btn-action {
+            background: linear-gradient(to right, var(--secondary), var(--primary));
+            border: none;
+            border-radius: 50px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .btn-action:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 7px 15px rgba(86, 223, 207, 0.3);
+                color: white;
+            }
+
+        .btn-outline-action {
+            border: 2px solid var(--primary);
+            border-radius: 50px;
+            padding: 12px 30px;
+            font-weight: 600;
+            color: var(--primary);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .btn-outline-action:hover {
+                background: rgba(86, 223, 207, 0.1);
+                color: var(--primary);
+            }
+
+        .status-badge {
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-completed {
+            background: rgba(86, 223, 207, 0.2);
+            color: var(--secondary);
+        }
+
+        .status-cancelled {
+            background: rgba(255, 99, 132, 0.2);
+            color: #ff6384;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: confetti-fall 5s linear infinite;
+        }
+
+        @@keyframes confetti-fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        @@media (max-width: 768px) {
+            .confirmation-container {
+                padding: 15px;
+            }
+
+            .confirmation-header {
+                padding: 30px 15px;
+            }
+
+            .section-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .icon-circle {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+                .action-buttons .btn {
+                    width: 100%;
+                }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 30px;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @@keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="confirmation-container">
+        <div id="confetti-container"></div>
+
+        <div class="confirmation-header position-relative pulse">
+            <div class="check-icon text-white">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <h1 class="display-5 fw-bold mt-3">Order Confirmed!</h1>
+            <p class="lead mb-0">Thank you for your purchase. Your order details are below.</p>
+        </div>
+
+        <div class="confirmation-card">
+            <div class="card-section">
+                <div class="section-header">
+                    <div class="icon-circle"><i class="bi bi-receipt"></i></div>
+                    <div>
+                        <h2 class="mb-1">Order Information</h2>
+                        <p class="text-muted mb-0">Order #@Model.Id</p>
+                    </div>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Order Date</div>
+                        <div class="info-value">@Model.OrderDate.ToString("f")</div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">Payment Method</div>
+                        <div class="info-value">@Model.PaymentMethod ?? "N/A"</div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">Transaction ID</div>
+                        <div class="info-value">@Model.Payment?.TransactionId ?? "N/A"</div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">Order Status</div>
+                        <span class="status-badge @(Model.Status.ToString() == "Cancelled" ? "status-cancelled" : "status-completed")">
+                            @Model.Status.ToString()
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-section">
+                <div class="section-header">
+                    <div class="icon-circle"><i class="bi bi-geo-alt"></i></div>
+                    <div>
+                        <h2 class="mb-1">Pickup Information</h2>
+                        <p class="text-muted mb-0">@Model.Location?.Name ?? "Not Provided"</p>
+                    </div>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Location Name</div>
+                        <div class="info-value">@Model.Location?.Name ?? "N/A"</div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">Location Fee</div>
+                        <div class="info-value">Rs. @((Model.Location?.Price ?? 0).ToString("0.00"))</div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">Pickup Time</div>
+                        <div class="info-value">Within 2 hours</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-section">
+                <div class="total-section d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted">Total Amount</div>
+                        <h1 class="text-success fw-bold mt-2">Rs. @Model.TotalAmount.ToString("0.00")</h1>
+                    </div>
+                    <div class="d-flex gap-3 action-buttons">
+                        <a asp-controller="CustomerProduct" asp-action="Index" class="btn btn-outline-action">
+                            <i class="bi bi-house-door me-2"></i> Continue Shopping
+                        </a>
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-action">
+                            <i class="bi bi-receipt me-2"></i> View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            <p>Need help with your order? <a href="#" class="text-decoration-none" style="color: var(--secondary);">Contact Support</a></p>
+            <p class="mt-2">Order ID: #@Model.Id | Confirmed on: @DateTime.Now.ToString("f")</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function createConfetti() {
+            const container = document.getElementById('confetti-container');
+            const colors = ['#56DFCF', '#708A58', '#FCEF91', '#FF9E6D', '#A78BFA'];
+
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+
+                const size = Math.random() * 10 + 5;
+                const left = Math.random() * 100;
+                const duration = Math.random() * 3 + 2;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+
+                confetti.style.width = `${size}px`;
+                confetti.style.height = `${size}px`;
+                confetti.style.left = `${left}%`;
+                confetti.style.background = color;
+                confetti.style.animationDuration = `${duration}s`;
+                confetti.style.animationDelay = `${Math.random() * 2}s`;
+
+                container.appendChild(confetti);
+
+                setTimeout(() => confetti.remove(), duration * 1000);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            createConfetti();
+            setInterval(createConfetti, 3000);
+        });
+    </script>
+</body>
+</html>

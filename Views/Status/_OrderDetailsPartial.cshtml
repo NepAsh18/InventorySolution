@@ -1,0 +1,253 @@
+﻿@model Order
+@using InventorySolution.Models.Entities
+
+<style>
+    .icon-container {
+        background: rgba(192, 201, 238, 0.3);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+    }
+    
+    .detail-card {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        margin-bottom: 20px;
+    }
+    
+    .detail-card-header {
+        padding: 15px 20px;
+        color: white;
+        font-weight: 600;
+    }
+    
+    .detail-card-body {
+        padding: 20px;
+    }
+    
+    .detail-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .detail-icon {
+        font-size: 1.2rem;
+        margin-right: 15px;
+        color: #6c757d;
+    }
+    
+    .item-row {
+        transition: background-color 0.2s;
+    }
+    
+    .item-row:hover {
+        background-color: rgba(192, 201, 238, 0.15);
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="fas fa-receipt me-2"></i>Order #@Model.Id
+        </h2>
+        <span class="badge @GetStatusBadgeClass(Model.Status) p-2 fs-6">
+            <i class="fas fa-tag me-1"></i>@Model.Status
+        </span>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="detail-card">
+                <div class="detail-card-header bg-primary">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Order Information</h5>
+                </div>
+                <div class="detail-card-body">
+                    <div class="detail-item">
+                        <div class="icon-container">
+                            <i class="fas fa-user text-primary"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Customer</h6>
+                            <p class="mb-0 fw-bold">@Model.User?.FullName</p>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="icon-container">
+                            <i class="fas fa-envelope text-primary"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Email</h6>
+                            <p class="mb-0 fw-bold">@Model.User?.Email</p>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="icon-container">
+                            <i class="fas fa-map-marker-alt text-primary"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Location</h6>
+                            <p class="mb-0 fw-bold">@Model.Location?.Name</p>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="icon-container">
+                            <i class="fas fa-calendar-alt text-primary"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Order Date</h6>
+                            <p class="mb-0 fw-bold">@Model.OrderDate.ToString("f")</p>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="icon-container">
+                            <i class="fas fa-sync-alt text-primary"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Last Updated</h6>
+                            <p class="mb-0 fw-bold">@Model.LastStatusChange.ToString("g")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="detail-card">
+                <div class="detail-card-header bg-success">
+                    <h5 class="mb-0"><i class="fas fa-credit-card me-2"></i>Payment Information</h5>
+                </div>
+                <div class="detail-card-body">
+                    <div class="detail-item">
+                        <div class="icon-container">
+                            <i class="fas fa-wallet text-success"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Payment Method</h6>
+                            <p class="mb-0 fw-bold">@Model.PaymentMethod</p>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="icon-container">
+                            <i class="fas fa-rupee-sign text-success"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Total Amount</h6>
+                            <p class="mb-0 fw-bold text-success">Rs @Model.TotalAmount.ToString("N0")</p>
+                        </div>
+                    </div>
+                    
+                    @if (Model.Payment != null)
+                    {
+                        <div class="detail-item">
+                            <div class="icon-container">
+                                <i class="fas fa-receipt text-success"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">Transaction ID</h6>
+                                <p class="mb-0 fw-bold">@Model.Payment.TransactionId</p>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="icon-container">
+                                <i class="fas fa-calendar-check text-success"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">Payment Date</h6>
+                                <p class="mb-0 fw-bold">@Model.Payment.PaymentDate.ToString("g")</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="detail-card">
+                <div class="detail-card-header bg-info">
+                    <h5 class="mb-0"><i class="fas fa-boxes me-2"></i>Order Items</h5>
+                </div>
+                <div class="detail-card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4"><i class="fas fa-box me-2"></i>Product</th>
+                                    <th class="text-end"><i class="fas fa-tag me-2"></i>Unit Price</th>
+                                    <th class="text-center"><i class="fas fa-sort-amount-up me-2"></i>Quantity</th>
+                                    <th class="text-end"><i class="fas fa-tags me-2"></i>Final Price</th>
+                                    <th class="text-end pe-4"><i class="fas fa-calculator me-2"></i>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr class="item-row">
+                                        <td class="ps-4">
+                                            <div class="d-flex align-items-center">
+                                                <div class="icon-container">
+                                                    <i class="fas fa-box text-info"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0">@item.Product?.Name</h6>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-end">
+                                            <span>Rs @item.UnitPrice.ToString("N0")</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-light text-dark p-2">@item.Quantity</span>
+                                        </td>
+                                        <td class="text-end">
+                                            <span class="fw-medium text-success">Rs @item.FinalPrice.ToString("N0")</span>
+                                        </td>
+                                        <td class="text-end pe-4">
+                                            <span class="fw-bold">Rs @((item.FinalPrice * item.Quantity).ToString("N0"))</span>
+                                        </td>
+                                    </tr>
+                                }
+                                <tr class="table-light">
+                                    <td colspan="3" class="border-0"></td>
+                                    <td class="text-end fw-bold border-0">Total:</td>
+                                    <td class="text-end fw-bold fs-5 pe-4 border-0">
+                                        <span class="text-success">Rs @Model.TotalAmount.ToString("N0")</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    private string GetStatusBadgeClass(OrderStatus status)
+    {
+        return status switch
+        {
+            OrderStatus.Pending => "bg-pending",
+            OrderStatus.Paid => "bg-paid",
+            OrderStatus.Processing => "bg-processing",
+            OrderStatus.Shipped => "bg-shipped",
+            OrderStatus.Delivered => "bg-delivered",
+            OrderStatus.Cancelled => "bg-cancelled",
+            _ => "bg-secondary"
+        };
+    }
+}

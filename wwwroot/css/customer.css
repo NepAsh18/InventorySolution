@@ -1,0 +1,80 @@
+﻿:root {
+    --mint: #4db6ac;
+    --dark-mint: #00897b;
+    --light-mint: #b2dfdb;
+    --white: #ffffff;
+    --light-gray: #f8f9fa;
+    --text-dark: #212529;
+}
+
+.customer-body {
+    background-color: var(--light-gray);
+    color: var(--text-dark);
+}
+
+.bg-mint {
+    background-color: var(--mint) !important;
+}
+
+.btn-mint {
+    background-color: var(--mint);
+    color: white;
+    border: none;
+}
+
+    .btn-mint:hover {
+        background-color: var(--dark-mint);
+        color: white;
+    }
+
+.btn-outline-mint {
+    color: var(--mint);
+    border-color: var(--mint);
+}
+
+    .btn-outline-mint:hover {
+        background-color: var(--mint);
+        color: white;
+    }
+
+.text-mint {
+    color: var(--mint) !important;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+}
+
+.nav-link {
+    font-weight: 500;
+}
+
+.cart-item {
+    border-bottom: 1px solid #eee;
+}
+
+.input-group .form-control:focus {
+    border-color: var(--mint);
+    box-shadow: 0 0 0 0.25rem rgba(77, 182, 172, 0.25);
+}
+
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.dropdown-item:active {
+    background-color: var(--mint);
+}
+
+.social-icons i {
+    font-size: 1.2rem;
+}
+
+footer {
+    background-color: var(--white);
+}
+
+    footer a:hover {
+        color: var(--dark-mint) !important;
+    }

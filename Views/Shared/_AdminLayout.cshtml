@@ -1,0 +1,410 @@
+﻿@using System.Security.Claims
+@{
+    var isSidebarCollapsed = Context.Request.Cookies["sidebarCollapsed"] == "true";
+    var controllerName = ViewContext.RouteData.Values["controller"]?.ToString();
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+
+    <!-- Notification CSS -->
+    <style>
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.65rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .notification-dropdown {
+            width: 350px;
+            max-height: 500px;
+            overflow-y: auto;
+            padding: 0;
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            border-bottom: 1px solid #dee2e6;
+            background-color: #f8f9fa;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .notification-list {
+            padding: 0;
+        }
+
+        .notification-item {
+            display: flex;
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+            transition: background 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+            .notification-item.unread {
+                background-color: #f8f9fa;
+                border-left: 3px solid #0d6efd;
+            }
+
+            .notification-item:hover {
+                background-color: #e9ecef;
+            }
+
+        .notification-icon {
+            font-size: 1.2rem;
+            margin-right: 12px;
+            align-self: flex-start;
+            color: #6c757d;
+        }
+
+        .notification-item[data-notification-type="NewCustomer"] .notification-icon {
+            color: #198754;
+        }
+
+        .notification-item[data-notification-type="OrderPlaced"] .notification-icon {
+            color: #0d6efd;
+        }
+
+        .notification-item[data-notification-type="OrderCancelled"] .notification-icon {
+            color: #dc3545;
+        }
+
+        .notification-item[data-notification-type="OrderCompleted"] .notification-icon {
+            color: #ffc107;
+        }
+
+        .notification-item[data-notification-type="OrderStatusChanged"] .notification-icon {
+            color: #6f42c1;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .mark-read-btn {
+            align-self: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            background: none;
+            border: none;
+            color: #6c757d;
+            padding: 0 5px;
+        }
+
+        .notification-item:hover .mark-read-btn {
+            opacity: 1;
+        }
+
+        .notification-empty {
+            padding: 20px;
+            color: #6c757d;
+            text-align: center;
+        }
+
+            .notification-empty i {
+                font-size: 2rem;
+                margin-bottom: 10px;
+            }
+    </style>
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar @(isSidebarCollapsed ? "collapsed" : "")" id="sidebar">
+            <div class="sidebar-header position-relative">
+                <h3>Inventory Admin</h3>
+                <button class="sidebar-toggle" id="sidebarCollapse">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+
+            <ul class="nav flex-column mt-3">
+                <li class="nav-item">
+                    <a asp-controller="Admin" asp-action="Dashboard"
+                       class="nav-link @(controllerName == "Admin" ? "active" : "")">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+
+                <!-- Products Section -->
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="collapse" href="#productsSubmenu" role="button" aria-expanded="false">
+                        <i class="bi bi-box-seam"></i>
+                        <span>Products</span>
+                    </a>
+                    <div class="collapse" id="productsSubmenu">
+                        <div class="submenu py-2">
+                            <a asp-controller="Categories" asp-action="Index" class="nav-link">
+                                <i class="bi bi-tags"></i>
+                                <span>Categories</span>
+                            </a>
+                            <a asp-controller="ProductList" asp-action="Index" class="nav-link">
+                                <i class="bi bi-list-ul"></i>
+                                <span>Product List</span>
+                            </a>
+                            <a asp-controller="UnitMeasures" asp-action="Index" class="nav-link">
+                                <i class="bi bi-rulers"></i>
+                                <span>Unit Measures</span>
+                            </a>
+                            <a asp-controller="AdminProduct" asp-action="Index" class="nav-link">
+                                <i class="bi bi-boxes"></i>
+                                <span>Inventory</span>
+                            </a>
+                        </div>
+                    </div>
+                </li>
+
+                <!-- Shipment Section -->
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="collapse" href="#shipmentSubmenu" role="button" aria-expanded="false">
+                        <i class="bi bi-truck"></i>
+                        <span>Shipment</span>
+                    </a>
+                    <div class="collapse" id="shipmentSubmenu">
+                        <div class="submenu py-2">
+                            <a asp-controller="Locations" asp-action="Index" class="nav-link">
+                                <i class="bi bi-pin-map"></i>
+                                <span>Locations</span>
+                            </a>
+                            <a asp-controller="Shipment" asp-action="Index" class="nav-link">
+                                <i class="bi bi-truck"></i>
+                                <span>Shipments</span>
+                            </a>
+                        </div>
+                    </div>
+                </li>
+
+                <!-- Customers Section -->
+                <li class="nav-item">
+                    <a asp-controller="AdminCustomer" asp-action="Index"
+                       class="nav-link @(controllerName == "AdminCustomer" ? "active" : "")">
+                        <i class="bi bi-people"></i>
+                        <span>Customers</span>
+                    </a>
+                </li>
+
+                <!-- Reports Section -->
+                <li class="nav-item">
+                    <a asp-controller="Report" asp-action="Index" class="nav-link">
+                        <i class="bi bi-graph-up"></i>
+                        <span>Reports</span>
+                    </a>
+                </li>
+
+                <!-- Order Status Section -->
+                <li class="nav-item">
+                    <a asp-controller="Status" asp-action="Index"
+                       class="nav-link @(controllerName == "Status" ? "active" : "")">
+                        <i class="bi bi-list-check"></i>
+                        <span>Order Status</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Navbar -->
+            <nav class="top-navbar">
+                <div class="container-fluid d-flex justify-content-between align-items-center">
+                    <button class="action-btn mobile-sidebar-toggle d-lg-none">
+                        <i class="bi bi-list"></i>
+                    </button>
+
+                    <div class="d-none d-lg-block">
+                        <h4 class="mb-0">@ViewData["Title"]</h4>
+                    </div>
+
+                    <div class="navbar-actions">
+                        <!-- Notification dropdown -->
+                        <div class="dropdown me-3" id="notification-container">
+                            <button class="btn position-relative p-0 border-0 bg-transparent"
+                                    id="notificationDropdown"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                <i class="bi bi-bell fs-5"></i>
+                                <span id="notification-badge" class="notification-badge d-none">0</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end notification-dropdown">
+                                <li>
+                                    <div id="notification-list" class="p-2">
+                                        <div class="text-center py-3">
+                                            <div class="spinner-border spinner-border-sm" role="status">
+                                                <span class="visually-hidden">Loading notifications...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- User dropdown -->
+                        <div class="user-dropdown dropdown">
+                            <button class="dropdown-toggle" data-bs-toggle="dropdown">
+                                <div class="user-avatar">
+                                    @if (User.Identity?.IsAuthenticated == true)
+                                    {
+                                        <text>@User.Identity.Name?[0].ToString().ToUpper()</text>
+                                    }
+                                </div>
+                                <span>@User.Identity?.Name</span>
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i> Profile</a></li>
+                                <li><a class="dropdown-item" asp-controller="Status" asp-action="Index"><i class="bi bi-list-check me-2"></i> Order Status</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form asp-controller="Account" asp-action="Logout" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="bi bi-box-arrow-right me-2"></i> Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Content Area -->
+            <div class="content-container">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Notification Endpoints -->
+    <script>
+        const notificationEndpoints = {
+            getNotifications: '@Url.Action("GetNotifications", "Notification")',
+            getNotificationCount: '@Url.Action("GetNotificationCount", "Notification")',
+            markAllAsRead: '@Url.Action("MarkAllAsRead", "Notification")',
+            markAsRead: '@Url.Action("MarkAsRead", "Notification")'
+        };
+
+        const currentUserId = '@userId';
+    </script>
+
+    <!-- Notification System JS -->
+    <script>
+        $(document).ready(function() {
+            // Initialize notifications
+            if (currentUserId) {
+                updateNotifications();
+
+                // Refresh notifications every 30 seconds
+                setInterval(updateNotifications, 30000);
+            }
+
+            // Mark single notification as read
+            $(document).on('click', '.mark-read-btn', function(e) {
+                e.stopPropagation();
+                const notificationId = $(this).data('id');
+                markAsRead(notificationId);
+            });
+
+            // Mark all as read
+            $(document).on('click', '#mark-all-read', function(e) {
+                e.stopPropagation();
+                markAllAsRead();
+            });
+
+            // Click notification item
+            $(document).on('click', '.notification-item', function() {
+                const url = $(this).data('url');
+                const notificationId = $(this).data('id');
+
+                if (url && url !== '#') {
+                    markAsRead(notificationId, function() {
+                        window.location.href = url;
+                    });
+                }
+            });
+        });
+
+        // Update notifications and badge count
+        function updateNotifications() {
+            if (!currentUserId) return;
+
+            // Load notifications
+            $.get(notificationEndpoints.getNotifications, function(data) {
+                $('#notification-list').html(data);
+            }).fail(function() {
+                $('#notification-list').html(`
+                    <div class="notification-empty text-center py-3">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <p>Failed to load notifications</p>
+                    </div>
+                `);
+            });
+
+            // Update badge count
+            $.get(notificationEndpoints.getNotificationCount, function(count) {
+                const badge = $('#notification-badge');
+                if (count > 0) {
+                    badge.text(count).removeClass('d-none');
+                } else {
+                    badge.addClass('d-none');
+                }
+            }).fail(function() {
+                $('#notification-badge').addClass('d-none');
+            });
+        }
+
+        // Mark notification as read
+        function markAsRead(id, callback) {
+            $.post(notificationEndpoints.markAsRead, { id: id })
+                .done(function() {
+                    if (callback) callback();
+                    updateNotifications();
+                });
+        }
+
+        // Mark all notifications as read
+        function markAllAsRead() {
+            $.post(notificationEndpoints.markAllAsRead)
+                .done(function() {
+                    updateNotifications();
+                });
+        }
+    </script>
+
+    <script src="~/js/admin.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

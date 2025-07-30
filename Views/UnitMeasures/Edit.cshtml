@@ -1,0 +1,67 @@
+﻿@using InventorySolution.Models.Entities
+@model UnitMeasure
+@{
+    ViewData["Title"] = "Edit Unit Measure";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mt-4">Edit Unit Measure</h1>
+        <a asp-action="Index" class="btn btn-outline-purple">
+            <i class="bi bi-arrow-left me-1"></i> Back to List
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-darkpurple text-white">
+            <i class="bi bi-rulers me-1"></i> Edit Unit Measure Details
+        </div>
+        <div class="card-body">
+            <form asp-action="Edit" class="needs-validation" novalidate>
+                <input type="hidden" asp-for="Id" />
+
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label">Unit Measure Name</label>
+                    <input asp-for="Name" class="form-control" placeholder="Enter unit measure name" required />
+                    <div class="invalid-feedback">
+                        Please provide a unit measure name.
+                    </div>
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="reset" class="btn btn-outline-secondary me-md-2">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Changes
+                    </button>
+                    <button type="submit" class="btn btn-purple">
+                        <i class="bi bi-save me-1"></i> Update Unit
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Form validation
+            const forms = document.querySelectorAll('.needs-validation');
+            Array.from(forms).forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        });
+    </script>
+}

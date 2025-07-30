@@ -1,0 +1,66 @@
+﻿@using InventorySolution.Models.ViewModels
+@model AdminCreateCustomerViewModel
+
+@{
+    ViewData["Title"] = "Create New Customer";
+    Layout = "_AdminLayout";
+
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">
+            <h3 class="card-title">Create New Customer</h3>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="mb-3">
+                    <label asp-for="FullName" class="form-label"></label>
+                    <input asp-for="FullName" class="form-control" />
+                    <span asp-validation-for="FullName" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label"></label>
+                    <input asp-for="Password" type="password" class="form-control" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="SecurityQuestion" class="form-label"></label>
+                    <select asp-for="SecurityQuestion" class="form-select">
+                        <option value="">-- Select Security Question --</option>
+                        @foreach (var question in Model.AvailableSecurityQuestions)
+                        {
+                            <option value="@question">@question</option>
+                        }
+                    </select>
+                    <span asp-validation-for="SecurityQuestion" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="SecurityAnswer" class="form-label"></label>
+                    <input asp-for="SecurityAnswer" class="form-control" />
+                    <span asp-validation-for="SecurityAnswer" class="text-danger"></span>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Create Customer
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

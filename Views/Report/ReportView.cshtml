@@ -1,0 +1,590 @@
+﻿@model IEnumerable<dynamic>
+@{
+    ViewData["Title"] = "Monthly Report";
+    Layout = "_AdminLayout";
+}
+
+@using System.Globalization
+@using InventorySolution.Models.Entities
+@using Newtonsoft.Json
+@{
+    string reportType = ViewBag.ReportType;
+    int year = ViewBag.SelectedYear;
+    int month = ViewBag.SelectedMonth;
+    var years = ViewBag.Years as List<int>;
+    string monthName = new DateTime(year, month, 1).ToString("MMMM yyyy");
+    int daysInMonth = DateTime.DaysInMonth(year, month);
+    
+    // Precompute chart data
+    List<string> statusLabels = new List<string>();
+    List<int> statusCounts = new List<int>();
+    List<string> statusColors = new List<string>();
+    List<decimal> dailyData = new List<decimal>();
+
+    if (Model.Any())
+    {
+        if (reportType == "Orders")
+        {
+            statusLabels.AddRange(new[] { "Pending", "Shipped", "Delivered" });
+            statusCounts.AddRange(new[] {
+                Model.Count(i => ((InventorySolution.Controllers.OrderReportViewModel)i).Status == OrderStatus.Pending),
+                Model.Count(i => ((InventorySolution.Controllers.OrderReportViewModel)i).Status == OrderStatus.Shipped),
+                Model.Count(i => ((InventorySolution.Controllers.OrderReportViewModel)i).Status == OrderStatus.Delivered)
+            });
+            statusColors.AddRange(new[] { "#FFD6FF", "#D6CCFF", "#CCD6FF" });
+            
+            for (int day = 1; day <= daysInMonth; day++)
+            {
+                dailyData.Add(Model
+                    .Where(i => ((InventorySolution.Controllers.OrderReportViewModel)i).OrderDate.Day == day)
+                    .Sum(i => ((InventorySolution.Controllers.OrderReportViewModel)i).TotalAmount));
+            }
+        }
+        else
+        {
+            statusLabels.AddRange(new[] { "Shipped", "Delivered" });
+            statusCounts.AddRange(new[] {
+                Model.Count(i => ((InventorySolution.Controllers.ShipmentReportViewModel)i).Status == OrderStatus.Shipped),
+                Model.Count(i => ((InventorySolution.Controllers.ShipmentReportViewModel)i).Status == OrderStatus.Delivered)
+            });
+            statusColors.AddRange(new[] { "#D6CCFF", "#CCD6FF" });
+            
+            for (int day = 1; day <= daysInMonth; day++)
+            {
+                dailyData.Add(Model
+                    .Count(i => ((InventorySolution.Controllers.ShipmentReportViewModel)i).LastStatusChange.Day == day));
+            }
+        }
+    }
+}
+
+<style>
+    /* EXISTING STYLES (UNCHANGED) */
+    .report-header {
+        background: linear-gradient(90deg, #4B0082 0%, #A200FF 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+
+    .filter-card {
+        background-color: #F5F0FF;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(75, 0, 130, 0.15);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .export-btn {
+        background: #4B0082;
+        border: 2px solid #A200FF;
+        padding: 10px 20px;
+        border-radius: 30px;
+        font-weight: 600;
+        transition: all 0.3s;
+        color: white;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+
+        .export-btn:hover {
+            background: #A200FF;
+            transform: scale(1.05);
+            color: white;
+        }
+
+    .report-table {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 6px 18px rgba(75, 0, 130, 0.15);
+        border: none;
+        margin-bottom: 2rem;
+    }
+
+        .report-table thead {
+            background: linear-gradient(90deg, #4B0082 0%, #9400D3 100%);
+            color: white;
+        }
+
+        .report-table th {
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 1rem;
+        }
+
+        .report-table tbody tr:nth-child(even) {
+            background-color: #F5F0FF;
+        }
+
+        .report-table tbody tr:hover {
+            background-color: #E6D6FF;
+        }
+
+        .report-table td {
+            padding: 0.75rem 1rem;
+            vertical-align: middle;
+        }
+
+    .status-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        display: inline-block;
+    }
+
+    .status-pending {
+        background: #FFD6FF;
+        color: #800080;
+    }
+
+    .status-shipped {
+        background: #D6CCFF;
+        color: #4B0082;
+    }
+
+    .status-delivered {
+        background: #CCD6FF;
+        color: #000080;
+    }
+
+    .view-btn {
+        background: #A200FF;
+        color: white;
+        border: none;
+        padding: 5px 15px;
+        border-radius: 20px;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+
+        .view-btn:hover {
+            background: #4B0082;
+            transform: scale(1.05);
+            color: white;
+        }
+
+    .back-btn {
+        background: white;
+        color: #4B0082;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 30px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+    }
+
+        .back-btn:hover {
+            background: #E6D6FF;
+            color: #4B0082;
+        }
+
+    .no-data-container {
+        text-align: center;
+        padding: 3rem;
+        background: #F8F2FF;
+        border-radius: 10px;
+        border: 1px dashed #A200FF;
+    }
+
+    .no-data-icon {
+        font-size: 3rem;
+        color: #A200FF;
+        margin-bottom: 1rem;
+    }
+
+    .price-cell {
+        font-weight: 600;
+        color: #4B0082;
+    }
+    
+    /* NEW STYLES FOR CHARTS */
+    .chart-container {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 12px rgba(75, 0, 130, 0.1);
+    }
+    
+    .chart-header {
+        color: #4B0082;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #E6D6FF;
+    }
+    
+    .chart-row {
+        margin-bottom: 2rem;
+    }
+    
+    .stats-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 12px rgba(75, 0, 130, 0.1);
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .stats-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #4B0082;
+        margin: 0.5rem 0;
+    }
+    
+    .stats-label {
+        color: #9400D3;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .stats-icon {
+        font-size: 2rem;
+        color: #A200FF;
+        margin-bottom: 0.5rem;
+    }
+</style>
+
+<div class="container">
+    <div class="report-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="mb-0">
+                    @reportType Report - @monthName
+                </h2>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a asp-action="Index" class="back-btn">
+                    &larr; Back to Reports
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="filter-card">
+        <div class="row align-items-center">
+            <div class="col-md-5 mb-3 mb-md-0">
+                <h4 class="mb-0" style="color: #4B0082;">
+                    Filter Report
+                </h4>
+            </div>
+            <div class="col-md-7">
+                <form method="get" class="row g-2">
+                    <div class="col-md-5">
+                        <select name="year" class="form-select" aria-label="Select Year">
+                            <option value="">Select Year</option>
+                            @foreach (var y in years.OrderByDescending(y => y))
+                            {
+                                <option value="@y" selected="@(y == year)">@y</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <select name="month" class="form-select" aria-label="Select Month">
+                            <option value="">Select Month</option>
+                            @for (int m = 1; m <= 12; m++)
+                            {
+                                <option value="@m" selected="@(m == month)">
+                                    @DateTimeFormatInfo.CurrentInfo.GetMonthName(m)
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn w-100" style="background: #A200FF; color: white;">
+                            Apply
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0" style="color: #4B0082;">
+            @(Model.Count()) Records Found
+        </h4>
+        <a asp-action="Export"
+           asp-route-reportType="@reportType"
+           asp-route-year="@year"
+           asp-route-month="@month"
+           class="btn export-btn">
+            Export to Excel
+        </a>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="table-responsive">
+            @if (reportType == "Orders")
+            {
+                <table class="table table-hover report-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Location</th>
+                            <th>Order Date</th>
+                            <th>Total Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model as IEnumerable<InventorySolution.Controllers.OrderReportViewModel>)
+                        {
+                            <tr>
+                                <td>@item.Id</td>
+                                <td>@item.UserName</td>
+                                <td>@item.LocationName</td>
+                                <td>@item.OrderDate.ToString("MMM dd, yyyy")</td>
+                                <td class="price-cell">Rs. @item.TotalAmount.ToString("N2")</td>
+                                <td>
+                                    <span class="status-badge status-@item.Status.ToString().ToLower()">
+                                        @item.Status
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <table class="table table-hover report-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Order Date</th>
+                            <th>Total Amount</th>
+                            <th>Last Update</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model as IEnumerable<InventorySolution.Controllers.ShipmentReportViewModel>)
+                        {
+                            <tr>
+                                <td>@item.OrderId</td>
+                                <td>@item.CustomerName</td>
+                                <td>@item.CustomerLocation</td>
+                                <td>
+                                    <span class="status-badge status-@item.Status.ToString().ToLower()">
+                                        @item.Status
+                                    </span>
+                                </td>
+                                <td>@item.OrderDate.ToString("MMM dd, yyyy")</td>
+                                <td class="price-cell">Rs. @item.TotalAmount.ToString("N2")</td>
+                                <td>@item.LastStatusChange.ToString("MMM dd, HH:mm")</td>
+                                
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+        
+        <!-- CHARTS SECTION - ADDED BELOW THE TABLE -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h13A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 12.5v-9zM1.5 3a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-13z"/>
+                            <path d="M2 4.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-3zm0 5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-1zm11 1.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z"/>
+                        </svg>
+                    </div>
+                    <div class="stats-value">Rs. @Model.Sum(item => reportType == "Orders" ? ((InventorySolution.Controllers.OrderReportViewModel)item).TotalAmount : ((InventorySolution.Controllers.ShipmentReportViewModel)item).TotalAmount).ToString("N2")</div>
+                    <div class="stats-label">Total Revenue</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h13A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 12.5v-9zM1.5 3a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-13z"/>
+                            <path d="M2 4.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-3zm0 5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-1zm11 1.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z"/>
+                        </svg>
+                    </div>
+                    <div class="stats-value">@Model.Count()</div>
+                    <div class="stats-label">Total @(reportType == "Orders" ? "Orders" : "Shipments")</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                        </svg>
+                    </div>
+                    <div class="stats-value">@Model.Select(item => reportType == "Orders" ? ((InventorySolution.Controllers.OrderReportViewModel)item).LocationName : ((InventorySolution.Controllers.ShipmentReportViewModel)item).CustomerLocation).Distinct().Count()</div>
+                    <div class="stats-label">Unique Locations</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z"/>
+                            <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4z"/>
+                        </svg>
+                    </div>
+                    <div class="stats-value">@daysInMonth</div>
+                    <div class="stats-label">Days in Month</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charts Section -->
+        <div class="row chart-row">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h4 class="chart-header">Status Distribution</h4>
+                    <canvas id="statusChart" height="250"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h4 class="chart-header">
+                        @if(reportType == "Orders") {
+                            @:Daily Revenue
+                        } else {
+                            @:Daily Shipments
+                        }
+                    </h4>
+                    <canvas id="dailyChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="no-data-container">
+            <div class="no-data-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#A200FF" viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
+                </svg>
+            </div>
+            <h3>No Data Available</h3>
+            <p class="mb-0">No @reportType.ToLower() records found for @monthName</p>
+        </div>
+    }
+</div>
+
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        @if (Model.Any())
+        {
+            <text>
+            // Status Distribution Pie Chart
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            
+            const statusData = {
+                labels: @Html.Raw(Json.Serialize(statusLabels)),
+                datasets: [{
+                    data: @Html.Raw(Json.Serialize(statusCounts)),
+                    backgroundColor: @Html.Raw(Json.Serialize(statusColors)),
+                    borderWidth: 1
+                }]
+            };
+
+            new Chart(statusCtx, {
+                type: 'pie',
+                data: statusData,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    size: 13
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.chart.getDatasetMeta(0).total;
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Daily Chart (Revenue or Shipments)
+            const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+            
+            const dailyLabels = Array.from({length: @daysInMonth}, (_, i) => (i + 1).toString());
+            const dailyData = {
+                labels: dailyLabels,
+                datasets: [{
+                    label: '@(reportType == "Orders" ? "Daily Revenue" : "Daily Shipments")',
+                    data: @Html.Raw(Json.Serialize(dailyData)),
+                    backgroundColor: 'rgba(162, 0, 255, 0.2)',
+                    borderColor: '#A200FF',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true
+                }]
+            };
+
+            new Chart(dailyCtx, {
+                type: 'line',
+                data: dailyData,
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    @if(reportType == "Orders") {
+                                        @:return 'Rs. ' + value.toLocaleString();
+                                    } else {
+                                        @:return value;
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    @if(reportType == "Orders") {
+                                        @:return 'Revenue: Rs. ' + context.parsed.y.toLocaleString();
+                                    } else {
+                                        @:return 'Shipments: ' + context.parsed.y;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            </text>
+        }
+    });
+</script>

@@ -1,0 +1,405 @@
+﻿:root {
+    --primary: #471396;
+    --primary-light: #5b2aa9;
+    --secondary: #FFB823;
+    --background: #FFF2E0;
+    --accent: #C0C9EE;
+    --success: #EBFFD8;
+    --text-dark: #333;
+    --text-light: #fff;
+}
+
+body {
+    background-color: var(--background);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--text-dark);
+    min-height: 100vh;
+    margin: 0;
+}
+
+/* Layout Structure */
+.app-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 260px;
+    background: linear-gradient(180deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: var(--text-light);
+    transition: all 0.3s;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+}
+
+    .sidebar.collapsed {
+        width: 80px;
+    }
+
+.sidebar-header {
+    padding: 20px 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+}
+
+    .sidebar-header h3 {
+        font-weight: 600;
+        margin-bottom: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 1.25rem;
+    }
+
+.sidebar-toggle {
+    background-color: transparent;
+    border: none;
+    color: white;
+    font-size: 1.25rem;
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+.nav-item {
+    margin-bottom: 5px;
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.8);
+    padding: 12px 20px;
+    border-radius: 5px;
+    margin: 0 10px;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+    .nav-link i {
+        margin-right: 12px;
+        font-size: 1.1rem;
+        min-width: 24px;
+        text-align: center;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    .nav-link.active {
+        background-color: var(--secondary);
+        color: var(--text-dark);
+        font-weight: 500;
+    }
+
+    .nav-link[data-bs-toggle="collapse"]::after {
+        content: "\F282";
+        font-family: "bootstrap-icons";
+        margin-left: auto;
+        transition: transform 0.3s;
+    }
+
+    .nav-link[data-bs-toggle="collapse"][aria-expanded="true"]::after {
+        transform: rotate(180deg);
+    }
+
+.submenu {
+    padding-left: 20px;
+}
+
+    .submenu .nav-link {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+        border-radius: 4px;
+        margin: 5px 0;
+    }
+
+.sidebar.collapsed .nav-link span {
+    display: none;
+}
+
+.sidebar.collapsed .nav-link i {
+    margin-right: 0;
+    font-size: 1.3rem;
+}
+
+.sidebar.collapsed .submenu {
+    display: none;
+}
+
+.sidebar.collapsed .nav-link[data-bs-toggle="collapse"]::after {
+    display: none;
+}
+
+/* Main Content Area */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+}
+
+/* Top Navigation */
+.top-navbar {
+    background-color: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    padding: 15px 25px;
+    z-index: 100;
+}
+
+.navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.action-btn {
+    background-color: var(--accent);
+    color: var(--primary);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+    .action-btn:hover {
+        background-color: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+.notification-btn {
+    position: relative;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: var(--secondary);
+    color: var(--text-dark);
+    font-size: 0.7rem;
+    font-weight: 600;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+}
+
+.user-dropdown .dropdown-toggle {
+    background-color: var(--accent);
+    color: var(--primary);
+    border: none;
+    border-radius: 30px;
+    padding: 8px 15px 8px 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+    .user-dropdown .dropdown-toggle:hover {
+        background-color: var(--primary);
+        color: white;
+    }
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dark);
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+/* Content Area */
+.content-container {
+    flex: 1;
+    padding: 25px;
+    overflow-y: auto;
+}
+
+.content-card {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    padding: 25px;
+    margin-bottom: 25px;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+    .page-header h1 {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: var(--primary);
+        margin-bottom: 0;
+    }
+
+/* Notification Dropdown */
+.notification-dropdown {
+    min-width: 350px;
+    padding: 0;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.notification-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 10;
+}
+
+.notification-item {
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    transition: background-color 0.2s;
+    cursor: pointer;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+    .notification-item:hover {
+        background-color: var(--accent);
+    }
+
+    .notification-item.unread {
+        background-color: var(--success);
+    }
+
+.notification-footer {
+    padding: 10px 15px;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.02);
+    position: sticky;
+    bottom: 0;
+    background: white;
+    z-index: 10;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .sidebar {
+        position: fixed;
+        left: -260px;
+        height: 100vh;
+    }
+
+        .sidebar.show {
+            left: 0;
+        }
+
+        .sidebar.collapsed {
+            left: -80px;
+        }
+
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+
+    .sidebar.show + .sidebar-overlay {
+        display: block;
+    }
+
+    .mobile-sidebar-toggle {
+        display: block;
+    }
+}
+
+@media (max-width: 768px) {
+    .content-container {
+        padding: 15px;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .notification-dropdown {
+        min-width: 300px;
+        left: auto !important;
+        right: 0 !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .navbar-actions {
+        gap: 8px;
+    }
+
+    .user-dropdown .dropdown-toggle span {
+        display: none;
+    }
+}
+
+/* Add to your CSS file */
+.notification-badge {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: var(--secondary);
+    color: var(--text-dark);
+    font-size: 0.7rem;
+    font-weight: 600;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+}
+
+.notification-item {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+    .notification-item:hover {
+        background-color: rgba(192, 201, 238, 0.3);
+    }

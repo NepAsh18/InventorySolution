@@ -1,0 +1,29 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Inventory Solution</title>
+
+    <!-- MATERIAL DESIGN ICONIC FONT -->
+    <link rel="stylesheet" href="~/fonts/material-design-iconic-font/css/material-design-iconic-font.min.css">
+
+    <!-- STYLE CSS -->
+    <link rel="stylesheet" href="~/css/auth.css">
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-left"
+             >
+            <div class="auth-content">
+                @RenderBody()
+            </div>
+        </div>
+        <div class="auth-right" style="background-image: url('@Url.Content("~/images/auth-bg.jpg")');"></div>
+    </div>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

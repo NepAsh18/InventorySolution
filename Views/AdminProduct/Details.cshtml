@@ -1,0 +1,234 @@
+﻿@using InventorySolution.Models.Entities
+@model Product
+@{
+    ViewData["Title"] = "Product Details";
+    Layout = "_AdminLayout";
+
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --dark-green: #347433;
+            --amber: #FFC107;
+            --light-purple: #C0C9EE;
+            --dark-purple: #725CAD;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .header-gradient {
+            background: linear-gradient(135deg, var(--dark-purple), var(--dark-green));
+            color: white;
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-purple {
+            background-color: var(--dark-purple);
+            border-color: var(--dark-purple);
+            color: white;
+            transition: all 0.3s;
+        }
+
+            .btn-purple:hover {
+                background-color: #614a8f;
+                border-color: #614a8f;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(114, 92, 173, 0.3);
+            }
+
+        .btn-outline-purple {
+            border-color: var(--dark-purple);
+            color: var(--dark-purple);
+        }
+
+            .btn-outline-purple:hover {
+                background-color: var(--dark-purple);
+                color: white;
+            }
+
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--dark-purple), #614a8f);
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+        }
+
+        .info-highlight {
+            background-color: rgba(192, 201, 238, 0.15);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .product-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid var(--light-purple);
+        }
+
+        .stats-card {
+            text-align: center;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            background-color: white;
+            border-left: 4px solid var(--dark-purple);
+        }
+
+        .stats-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--dark-purple);
+            margin: 0.5rem 0;
+        }
+
+        .stats-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .stats-icon {
+            font-size: 2rem;
+            color: var(--dark-green);
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-gradient">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-5 fw-bold"><i class="bi bi-info-circle me-3"></i>Product Details</h1>
+                    <p class="mb-0">View detailed information about this product</p>
+                </div>
+                <a asp-action="Index" class="btn btn-light">
+                    <i class="bi bi-arrow-left me-1"></i> Back to List
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-box-seam me-1"></i> Product Information
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-highlight">
+                                    <label class="form-label">Product Name</label>
+                                    <p class="fw-bold">@Model.Name</p>
+                                </div>
+                                <div class="info-highlight">
+                                    <label class="form-label">Description</label>
+                                    <p>@Model.Description</p>
+                                </div>
+                                <div class="info-highlight">
+                                    <label class="form-label">Manufactured Date</label>
+                                    <p>@Model.ManufacturedDate.ToString("dd MMM yyyy")</p>
+                                </div>
+                                <div class="info-highlight">
+                                    <label class="form-label">Expiry Date</label>
+                                    <p>@Model.ExpiryDate.ToString("dd MMM yyyy")</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-highlight">
+                                    <label class="form-label">Price</label>
+                                    <p class="fw-bold">Rs. @Model.Price.ToString("N2")</p>
+                                </div>
+                                <div class="info-highlight">
+                                    <label class="form-label">Quantity</label>
+                                    <p>@Model.Quantity</p>
+                                </div>
+                                <div class="info-highlight">
+                                    <label class="form-label">Reorder Level</label>
+                                    <p>@Model.ReorderLevel</p>
+                                </div>
+                                <div class="info-highlight">
+                                    <label class="form-label">Category</label>
+                                    <p>@(Model.Category?.Name ?? "N/A")</p>
+                                </div>
+                                <div class="info-highlight">
+                                    <label class="form-label">Unit of Measure</label>
+                                    <p>@(Model.UnitMeasure?.Name ?? "N/A")</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="bi bi-image me-1"></i> Product Image
+                    </div>
+                    <div class="card-body text-center">
+                        @if (!string.IsNullOrEmpty(Model.ImagePath))
+                        {
+                            <img src="@Model.ImagePath" class="product-image" alt="@Model.Name">
+                        }
+                        else
+                        {
+                            <div class="bg-light border rounded d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <span class="text-muted">No image available</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="stats-card">
+                    <i class="bi bi-box-seam stats-icon"></i>
+                    <div class="stats-value">@Model.Quantity</div>
+                    <div class="stats-label">Current Stock</div>
+                </div>
+
+                <div class="stats-card">
+                    <i class="bi bi-currency-rupee stats-icon"></i>
+                    <div class="stats-value">Rs. @Model.Price.ToString("N2")</div>
+                    <div class="stats-label">Price per unit</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-end mt-4">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-purple me-2">
+                <i class="bi bi-pencil me-1"></i> Edit Product
+            </a>
+            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">
+                <i class="bi bi-trash me-1"></i> Delete Product
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

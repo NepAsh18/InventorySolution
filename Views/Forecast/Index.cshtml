@@ -1,0 +1,334 @@
+﻿@model List<InventorySolution.Controllers.ForecastController.SalesForecast>
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "30-Day Sales Forecast";
+}
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-danger">
+        <strong>Error:</strong> Forecast data is not available.
+        @if (ViewBag.Error != null)
+        {
+            <div>@ViewBag.Error</div>
+        }
+    </div>
+    return;
+}
+
+@{
+    // Calculate previous 30 days sales from existing data
+    var previousStartDate = DateTime.Today.AddDays(-60);
+    var previousEndDate = DateTime.Today.AddDays(-31);
+    var forecastStartDate = Model.Min(f => f.Date);
+    var forecastEndDate = Model.Max(f => f.Date);
+
+    // Create previous sales data points
+    var previousSales = Model
+        .Where(f => f.Date >= previousStartDate && f.Date <= previousEndDate)
+        .Select(f => new
+        {
+            Label = f.Date.ToString("dd MMM"),
+            Value = f.Amount
+        })
+        .ToList();
+
+    // Create forecast data points
+    var forecast = Model
+        .Where(f => f.Date >= forecastStartDate && f.Date <= forecastEndDate)
+        .Select(f => new
+        {
+            Label = f.Date.ToString("dd MMM"),
+            Value = f.Amount
+        })
+        .ToList();
+}
+
+<style>
+    .card {
+        border-radius: 0.75rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.1) !important;
+        }
+
+    .bg-opacity-10 {
+        background-color: rgba(var(--bs-primary-rgb), 0.1) !important;
+    }
+
+    .chart-container {
+        height: 400px;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="bi bi-bar-chart-line me-2"></i>30-Day Sales Forecast
+        </h1>
+        <div>
+            <span class="badge bg-primary bg-opacity-10 text-primary py-2 px-3">
+                <i class="bi bi-calendar me-1"></i>@DateTime.Today.ToString("dd MMM yyyy")
+            </span>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted small">Previous 30 Days</span>
+                            <h2 class="mt-2 mb-0">₹@previousSales.Sum(p => p.Value).ToString("N0", CultureInfo.CreateSpecificCulture("en-IN"))</h2>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded-circle">
+                            <i class="bi bi-currency-rupee fs-2 text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted small">30-Day Forecast</span>
+                            <h2 class="mt-2 mb-0">₹@forecast.Sum(f => f.Value).ToString("N0", CultureInfo.CreateSpecificCulture("en-IN"))</h2>
+                        </div>
+                        <div class="bg-success bg-opacity-10 p-3 rounded-circle">
+                            <i class="bi bi-graph-up fs-2 text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted small">Projected Change</span>
+                            @{
+                                var previousTotal = previousSales.Sum(p => p.Value);
+                                var forecastTotal = forecast.Sum(f => f.Value);
+                                var changePercent = previousTotal > 0
+                                ? (forecastTotal - previousTotal) / previousTotal * 100
+                                : 0;
+                                var changeClass = changePercent >= 0 ? "text-success" : "text-danger";
+                                var changeIcon = changePercent >= 0 ? "bi-arrow-up" : "bi-arrow-down";
+                            }
+                            <h2 class="mt-2 mb-0 @changeClass">
+                                @changePercent.ToString("+0.0;-0.0")%
+                                <i class="bi @changeIcon"></i>
+                            </h2>
+                        </div>
+                        <div class="bg-info bg-opacity-10 p-3 rounded-circle">
+                            <i class="bi bi-arrow-repeat fs-2 text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted small">Peak Forecast Day</span>
+                            <h2 class="mt-2 mb-0">
+                                @{
+                                    var peakDay = forecast.OrderByDescending(f => f.Value).FirstOrDefault();
+                                }
+                                @(peakDay?.Label ?? "N/A")
+                            </h2>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 p-3 rounded-circle">
+                            <i class="bi bi-lightning fs-2 text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Row -->
+    <div class="row g-4">
+        <!-- Bar Chart: Comparison -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="card-title mb-0">Sales Comparison: Previous vs Forecast</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="comparisonChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pie Chart: Forecast Distribution -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="card-title mb-0">Forecast Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="distributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Format currency in Indian Rupees
+        const formatRupees = (value) => {
+            return '₹' + value.toLocaleString('en-IN', {
+                maximumFractionDigits: 0,
+                minimumFractionDigits: 0
+            });
+        };
+
+        // Prepare data
+        const forecastLabels = @Html.Raw(Json.Serialize(forecast.Select(f => f.Label)));
+        const forecastData = @Html.Raw(Json.Serialize(forecast.Select(f => f.Value)));
+
+        const previousLabels = @Html.Raw(Json.Serialize(previousSales.Select(p => p.Label)));
+        const previousData = @Html.Raw(Json.Serialize(previousSales.Select(p => p.Value)));
+
+        // Calculate weekly forecast for pie chart
+        const weeklyForecast = [];
+        if (forecastData && forecastData.length > 0) {
+            for (let i = 0; i < forecastData.length; i += 7) {
+                const weekTotal = forecastData.slice(i, i + 7).reduce((a, b) => a + b, 0);
+                weeklyForecast.push(weekTotal);
+            }
+        }
+
+        const weekLabels = [];
+        if (forecastLabels && forecastLabels.length >= 7) {
+            weekLabels.push("Week 1: " + forecastLabels[0] + " - " + forecastLabels[6]);
+        }
+        if (forecastLabels && forecastLabels.length >= 14) {
+            weekLabels.push("Week 2: " + forecastLabels[7] + " - " + forecastLabels[13]);
+        }
+        if (forecastLabels && forecastLabels.length >= 21) {
+            weekLabels.push("Week 3: " + forecastLabels[14] + " - " + forecastLabels[20]);
+        }
+        if (forecastLabels && forecastLabels.length >= 28) {
+            weekLabels.push("Week 4: " + forecastLabels[21] + " - " + forecastLabels[27]);
+        }
+        if (forecastLabels && forecastLabels.length >= 30) {
+            weekLabels.push("Week 5: " + forecastLabels[28] + " - " + forecastLabels[29]);
+        }
+
+        // Colors
+        const colors = [
+            'rgba(54, 162, 235, 0.8)',   // Blue
+            'rgba(75, 192, 192, 0.8)',   // Teal
+            'rgba(153, 102, 255, 0.8)',  // Purple
+            'rgba(255, 159, 64, 0.8)',   // Orange
+            'rgba(255, 99, 132, 0.8)'    // Red
+        ];
+
+        // Comparison Chart (Bar)
+        const comparisonCtx = document.getElementById('comparisonChart');
+        if (comparisonCtx && forecastData.length > 0 && previousData.length > 0) {
+            new Chart(comparisonCtx, {
+                type: 'bar',
+                data: {
+                    labels: forecastLabels,
+                    datasets: [
+                        {
+                            label: 'Previous 30 Days Sales',
+                            data: previousData,
+                            backgroundColor: 'rgba(100, 100, 100, 0.6)',
+                            borderColor: 'rgba(100, 100, 100, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: '30-Day Forecast',
+                            data: forecastData,
+                            backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                            borderColor: 'rgba(40, 167, 69, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return formatRupees(context.parsed.y);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatRupees(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Distribution Chart (Pie)
+        const distributionCtx = document.getElementById('distributionChart');
+        if (distributionCtx && weeklyForecast.length > 0) {
+            new Chart(distributionCtx, {
+                type: 'pie',
+                data: {
+                    labels: weekLabels,
+                    datasets: [{
+                        data: weeklyForecast,
+                        backgroundColor: colors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.parsed || 0;
+                                    const total = context.chart.getDatasetMeta(0).total;
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${context.label}: ${formatRupees(value)} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>

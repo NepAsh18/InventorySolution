@@ -1,0 +1,440 @@
+﻿@model InventorySolution.Controllers.ForecastController.LongTermForecastViewModel
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Long-Term Sales Forecast";
+}
+
+<style>
+    .card {
+        border-radius: 0.75rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin-bottom: 1.5rem;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.1) !important;
+        }
+
+    .bg-opacity-10 {
+        background-color: rgba(var(--bs-primary-rgb), 0.1) !important;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 400px;
+    }
+
+    .stats-card {
+        height: 100%;
+    }
+
+    .growth-card {
+        height: 100%;
+    }
+
+    .period-legend {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .legend-color {
+        width: 1rem;
+        height: 1rem;
+        border-radius: 0.25rem;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="bi bi-bar-chart-line me-2"></i>Long-Term Sales Forecast
+        </h1>
+        <div>
+            <span class="badge bg-primary bg-opacity-10 text-primary py-2 px-3">
+                <i class="bi bi-calendar me-1"></i>@DateTime.Today.ToString("dd MMM yyyy")
+            </span>
+        </div>
+    </div>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger mb-4">
+            <strong>Error:</strong> @ViewBag.Error
+        </div>
+    }
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <!-- Previous 6 Months -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm stats-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted small">Previous 6 Months</span>
+                            <h2 class="mt-2 mb-0">₹@Model.Historical.Sum(h => h.Value).ToString("N0", CultureInfo.CreateSpecificCulture("en-IN"))</h2>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded-circle">
+                            <i class="bi bi-clock-history fs-2 text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Next 6 Months -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm stats-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted small">Next 6 Months Forecast</span>
+                            <h2 class="mt-2 mb-0">₹@Model.ForecastNext6Months.Sum(f => f.Value).ToString("N0", CultureInfo.CreateSpecificCulture("en-IN"))</h2>
+                        </div>
+                        <div class="bg-success bg-opacity-10 p-3 rounded-circle">
+                            <i class="bi bi-graph-up fs-2 text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Next Year -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm stats-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted small">Next Year Forecast</span>
+                            <h2 class="mt-2 mb-0">₹@Model.ForecastNextYear.Sum(f => f.Value).ToString("N0", CultureInfo.CreateSpecificCulture("en-IN"))</h2>
+                        </div>
+                        <div class="bg-info bg-opacity-10 p-3 rounded-circle">
+                            <i class="bi bi-calendar-range fs-2 text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rate of Change Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm growth-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted small">6-Month Growth Rate</span>
+                            @{
+                                var prev6Total = Model.Historical.Sum(h => h.Value);
+                                var next6Total = Model.ForecastNext6Months.Sum(f => f.Value);
+                                var change6Percent = prev6Total > 0
+                                ? (next6Total - prev6Total) / prev6Total * 100
+                                : 0;
+                                var change6Class = change6Percent >= 0 ? "text-success" : "text-danger";
+                                var change6Icon = change6Percent >= 0 ? "bi-arrow-up" : "bi-arrow-down";
+                            }
+                            <h2 class="mt-2 mb-0 @change6Class">
+                                @change6Percent.ToString("+0.0;-0.0")%
+                                <i class="bi @change6Icon"></i>
+                            </h2>
+                            <div class="mt-2">
+                                <span class="text-muted small">Previous: ₹@prev6Total.ToString("N0", CultureInfo.CreateSpecificCulture("en-IN"))</span><br>
+                                <span class="text-muted small">Forecast: ₹@next6Total.ToString("N0", CultureInfo.CreateSpecificCulture("en-IN"))</span>
+                            </div>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 p-3 rounded-circle">
+                            <i class="bi bi-percent fs-2 text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm growth-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted small">Annual Growth Rate</span>
+                            @{
+                                var nextYearTotal = Model.ForecastNextYear.Sum(f => f.Value);
+                                var annualizedPrev = prev6Total * 2;
+                                var changeYearPercent = annualizedPrev > 0
+                                ? (nextYearTotal - annualizedPrev) / annualizedPrev * 100
+                                : 0;
+                                var changeYearClass = changeYearPercent >= 0 ? "text-success" : "text-danger";
+                                var changeYearIcon = changeYearPercent >= 0 ? "bi-arrow-up" : "bi-arrow-down";
+                            }
+                            <h2 class="mt-2 mb-0 @changeYearClass">
+                                @changeYearPercent.ToString("+0.0;-0.0")%
+                                <i class="bi @changeYearIcon"></i>
+                            </h2>
+                            <div class="mt-2">
+                                <span class="text-muted small">Annualized Previous: ₹@annualizedPrev.ToString("N0", CultureInfo.CreateSpecificCulture("en-IN"))</span><br>
+                                <span class="text-muted small">Forecast: ₹@nextYearTotal.ToString("N0", CultureInfo.CreateSpecificCulture("en-IN"))</span>
+                            </div>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 p-3 rounded-circle">
+                            <i class="bi bi-arrow-repeat fs-2 text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="row g-4 mb-4">
+        <!-- Combined Bar Chart -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="card-title mb-0">Sales Forecast Comparison</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="combinedChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Forecast Distribution -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="card-title mb-0">Forecast Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="distributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="row g-4">
+        <!-- Monthly Breakdown -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="card-title mb-0">Monthly Sales Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="height: 500px;">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                    <div class="period-legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(54, 162, 235, 0.8);"></div>
+                            <span>Previous 6 Months</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(75, 192, 192, 0.8);"></div>
+                            <span>Next 6 Months Forecast</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(153, 102, 255, 0.8);"></div>
+                            <span>Next Year Forecast</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Format currency in Indian Rupees
+        const formatRupees = (value) => {
+            return '₹' + value.toLocaleString('en-IN', {
+                maximumFractionDigits: 0,
+                minimumFractionDigits: 0
+            });
+        };
+
+        // Prepare data
+        const historicalLabels = @Html.Raw(Json.Serialize(Model.Historical.Select(h => h.Label)));
+        const historicalData = @Html.Raw(Json.Serialize(Model.Historical.Select(h => h.Value)));
+
+        const forecast6Labels = @Html.Raw(Json.Serialize(Model.ForecastNext6Months.Select(f => f.Label)));
+        const forecast6Data = @Html.Raw(Json.Serialize(Model.ForecastNext6Months.Select(f => f.Value)));
+
+        const forecastYearLabels = @Html.Raw(Json.Serialize(Model.ForecastNextYear.Select(f => f.Label)));
+        const forecastYearData = @Html.Raw(Json.Serialize(Model.ForecastNextYear.Select(f => f.Value)));
+
+        // Combined Chart (Bar)
+        const combinedCtx = document.getElementById('combinedChart');
+        if (combinedCtx) {
+            new Chart(combinedCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Previous 6 Months', 'Next 6 Months', 'Next Year'],
+                    datasets: [{
+                        label: 'Sales Value',
+                        data: [
+                            @Model.Historical.Sum(h => h.Value),
+                            @Model.ForecastNext6Months.Sum(f => f.Value),
+                            @Model.ForecastNextYear.Sum(f => f.Value)
+                        ],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(75, 192, 192, 0.8)',
+                            'rgba(153, 102, 255, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return formatRupees(context.parsed.y);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatRupees(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Distribution Chart (Pie)
+        const distributionCtx = document.getElementById('distributionChart');
+        if (distributionCtx) {
+            new Chart(distributionCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Next 6 Months', 'Next Year'],
+                    datasets: [{
+                        data: [
+                            @Model.ForecastNext6Months.Sum(f => f.Value),
+                            @Model.ForecastNextYear.Sum(f => f.Value)
+                        ],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.8)',
+                            'rgba(153, 102, 255, 0.8)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.parsed || 0;
+                                    const total = context.chart.getDatasetMeta(0).total;
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${context.label}: ${formatRupees(value)} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Monthly Breakdown Chart (Bar)
+        const monthlyCtx = document.getElementById('monthlyChart');
+        if (monthlyCtx) {
+            // Combine all labels and data
+            const allLabels = [...historicalLabels, ...forecast6Labels, ...forecastYearLabels];
+            const allData = [...historicalData, ...forecast6Data, ...forecastYearData];
+
+            // Create background colors array
+            const backgroundColors = [];
+            for (let i = 0; i < historicalLabels.length; i++) {
+                backgroundColors.push('rgba(54, 162, 235, 0.8)'); // Historical
+            }
+            for (let i = 0; i < forecast6Labels.length; i++) {
+                backgroundColors.push('rgba(75, 192, 192, 0.8)'); // Next 6 months
+            }
+            for (let i = 0; i < forecastYearLabels.length; i++) {
+                backgroundColors.push('rgba(153, 102, 255, 0.8)'); // Next year
+            }
+
+            new Chart(monthlyCtx, {
+                type: 'bar',
+                data: {
+                    labels: allLabels,
+                    datasets: [{
+                        label: 'Monthly Sales',
+                        data: allData,
+                        backgroundColor: backgroundColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return formatRupees(context.parsed.y);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatRupees(value);
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>

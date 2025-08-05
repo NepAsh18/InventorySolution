@@ -96,11 +96,19 @@ namespace InventorySolution
 
             // Add HttpClient support
             builder.Services.AddHttpClient();
+            // Add ConfigurationManager
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
 
 
 
 
             var app = builder.Build();
+
+
+
+            PythonService.StartApi();
+            await Task.Delay(5000);
 
             //Add Seed Services
             await SeedService.SeedDatabase(app.Services);
@@ -121,7 +129,12 @@ namespace InventorySolution
             app.UseAuthentication();
 
             app.UseAuthorization();
-            
+            app.MapControllerRoute(
+    name: "forecast",
+    pattern: "forecast",
+    defaults: new { controller = "Forecast", action = "Index" });
+
+
 
             app.MapControllerRoute(
                 name: "default",

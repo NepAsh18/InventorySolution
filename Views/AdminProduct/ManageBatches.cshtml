@@ -1,0 +1,204 @@
+﻿@model InventorySolution.Models.ViewModels.ProductBatchesVM
+@{
+    ViewData["Title"] = "Manage Batches";
+    Layout = "_AdminLayout";
+}
+
+<div class="header-gradient py-4">
+    <div class="container">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+            <div class="text-center text-md-start mb-3 mb-md-0">
+                <h1 class="display-5 fw-bold"><i class="bi bi-layers me-2"></i>Manage Batches</h1>
+                <p class="lead mb-0">Manage stock batches for: @Model.Name</p>
+            </div>
+            <a asp-action="Index" class="btn btn-light">
+                <i class="bi bi-arrow-left me-1"></i> Back to List
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    @if (TempData["BatchSuccess"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-check-circle me-2"></i> @TempData["BatchSuccess"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["BatchError"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i> @TempData["BatchError"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Stock Summary -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-info text-white py-3">
+            <h5 class="mb-0"><i class="bi bi-box me-2"></i>Stock Summary</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="card text-center h-100 border-primary">
+                        <div class="card-body">
+                            <div class="text-primary mb-2">
+                                <i class="bi bi-boxes fs-1"></i>
+                            </div>
+                            <h5 class="card-title">Current Stock</h5>
+                            <p class="display-5 fw-bold">@Model.CurrentQuantity</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card text-center h-100 border-warning">
+                        <div class="card-body">
+                            <div class="text-warning mb-2">
+                                <i class="bi bi-exclamation-triangle fs-1"></i>
+                            </div>
+                            <h5 class="card-title">Reorder Level</h5>
+                            <p class="display-5 fw-bold">@Model.ReorderLevel</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Batch Management -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-info text-white py-3">
+            <h5 class="mb-0"><i class="bi bi-layers me-2"></i>Stock Batches</h5>
+        </div>
+        <div class="card-body">
+            <!-- Add New Batch Section -->
+            <div class="mb-5">
+                <h5 class="mb-3 border-bottom pb-2">Add New Batch</h5>
+                <form asp-action="AddBatch" method="post">
+                    <input type="hidden" asp-for="NewBatch.ProductId" />
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <div class="mb-2">
+                                <label asp-for="NewBatch.Quantity" class="form-label fw-bold">Quantity *</label>
+                                <input asp-for="NewBatch.Quantity" class="form-control form-control-lg">
+                                <span asp-validation-for="NewBatch.Quantity" class="text-danger small"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-2">
+                                <label asp-for="NewBatch.PurchasePrice" class="form-label fw-bold">Cost Price *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">Rs.</span>
+                                    <input asp-for="NewBatch.PurchasePrice" class="form-control form-control-lg">
+                                </div>
+                                <span asp-validation-for="NewBatch.PurchasePrice" class="text-danger small"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-2">
+                                <label asp-for="NewBatch.ManufacturedDate" class="form-label fw-bold">Manufacture Date *</label>
+                                <input asp-for="NewBatch.ManufacturedDate" type="date" class="form-control form-control-lg">
+                                <span asp-validation-for="NewBatch.ManufacturedDate" class="text-danger small"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-2">
+                                <label asp-for="NewBatch.ExpiryDate" class="form-label fw-bold">Expiry Date *</label>
+                                <input asp-for="NewBatch.ExpiryDate" type="date" class="form-control form-control-lg">
+                                <span asp-validation-for="NewBatch.ExpiryDate" class="text-danger small"></span>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-plus-lg me-1"></i> Add Batch
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Existing Batches -->
+            <div>
+                <h5 class="mb-3 border-bottom pb-2">Existing Batches</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Batch ID</th>
+                                <th>Quantity</th>
+                                <th>Cost Price</th>
+                                <th>Manufactured</th>
+                                <th>Expiry</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var batch in Model.Batches)
+                            {
+                                var isExpiring = batch.ExpiryDate < DateTime.Today.AddMonths(1) && batch.ExpiryDate >= DateTime.Today;
+                                var isExpired = batch.ExpiryDate < DateTime.Today;
+
+                                <tr class="@(isExpiring ? "table-warning" : isExpired ? "table-danger" : "")">
+                                    <td class="fw-bold">#@batch.Id</td>
+                                    <td>@batch.Quantity</td>
+                                    <td>Rs. @batch.PurchasePrice.ToString("N2")</td>
+                                    <td>@batch.ManufacturedDate.ToString("dd MMM yyyy")</td>
+                                    <td>@batch.ExpiryDate.ToString("dd MMM yyyy")</td>
+                                    <td>
+                                        @if (isExpired)
+                                        {
+                                            <span class="badge bg-danger">Expired</span>
+                                        }
+                                        else if (isExpiring)
+                                        {
+                                            <span class="badge bg-warning">Expiring Soon</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">Active</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <form asp-action="DeleteBatch" method="post">
+                                            <input type="hidden" name="batchId" value="@batch.Id" />
+                                            <input type="hidden" name="productId" value="@Model.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                            @if (!Model.Batches.Any())
+                            {
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">
+                                        <i class="bi bi-inbox me-1"></i> No batches recorded
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            const nextYear = new Date();
+            nextYear.setFullYear(nextYear.getFullYear() + 1);
+            const nextYearFormatted = nextYear.toISOString().split('T')[0];
+
+            document.getElementById('NewBatch_ManufacturedDate').value = today;
+            document.getElementById('NewBatch_ExpiryDate').value = nextYearFormatted;
+        });
+    </script>
+}

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Routing;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace InventorySolution.Models.Entities
 {
@@ -36,6 +37,8 @@ namespace InventorySolution.Models.Entities
         public int UnitMeasureId { get; set; }
 
         public UnitMeasure UnitMeasure { get; set; }
+        public List<ProductBatch> Batches { get; set; } = new List<ProductBatch>();
+        
 
         public ICollection<OrderItem> OrderItems { get; set; }
     }

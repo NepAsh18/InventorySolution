@@ -1,242 +1,190 @@
-﻿@using InventorySolution.Models.Entities
-@model Product
+﻿@model InventorySolution.Models.ViewModels.ProductCreateVM
 @{
     ViewData["Title"] = "Add New Product";
     Layout = "_AdminLayout";
-
 }
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@ViewData["Title"]</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <style>
-        :root {
-            --dark-green: #347433;
-            --amber: #FFC107;
-            --light-purple: #C0C9EE;
-            --dark-purple: #725CAD;
-        }
-
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        .header-gradient {
-            background: linear-gradient(135deg, var(--dark-purple), var(--dark-green));
-            color: white;
-            padding: 1.5rem 0;
-            margin-bottom: 2rem;
-            border-radius: 0 0 15px 15px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-purple {
-            background-color: var(--dark-purple);
-            border-color: var(--dark-purple);
-            color: white;
-            transition: all 0.3s;
-        }
-
-            .btn-purple:hover {
-                background-color: #614a8f;
-                border-color: #614a8f;
-                transform: translateY(-2px);
-                box-shadow: 0 4px 8px rgba(114, 92, 173, 0.3);
-            }
-
-        .btn-outline-purple {
-            border-color: var(--dark-purple);
-            color: var(--dark-purple);
-        }
-
-            .btn-outline-purple:hover {
-                background-color: var(--dark-purple);
-                color: white;
-            }
-
-        .card {
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            border: none;
-            margin-bottom: 1.5rem;
-        }
-
-        .card-header {
-            background: linear-gradient(135deg, var(--dark-purple), #614a8f);
-            color: white;
-            border-radius: 12px 12px 0 0 !important;
-            font-weight: 600;
-            padding: 1rem 1.5rem;
-        }
-
-        .form-section {
-            background-color: white;
-            border-radius: 10px;
-            padding: 25px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .form-label {
-            font-weight: 600;
-            color: var(--dark-purple);
-        }
-
-        .product-image-preview {
-            max-height: 250px;
-            object-fit: cover;
-            border-radius: 8px;
-            border: 1px solid var(--light-purple);
-            display: none;
-        }
-    </style>
-</head>
-<body>
-    <div class="header-gradient">
-        <div class="container">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1 class="display-5 fw-bold"><i class="bi bi-plus-circle me-3"></i>Add New Product</h1>
-                    <p class="mb-0">Create a new product for your inventory</p>
-                </div>
-                <a asp-action="Index" class="btn btn-light">
-                    <i class="bi bi-arrow-left me-1"></i> Back to List
-                </a>
-            </div>
-        </div>
-    </div>
-
+<div class="header-gradient py-4">
     <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <div class="card">
-                    <div class="card-header">
-                        <i class="bi bi-box-seam me-1"></i> Product Details
-                    </div>
-                    <div class="card-body">
-                        <form asp-action="Create" enctype="multipart/form-data" class="row g-3">
-                            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
-
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label asp-for="Name" class="form-label"></label>
-                                    <input asp-for="Name" class="form-control" placeholder="Enter product name">
-                                    <span asp-validation-for="Name" class="text-danger"></span>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label asp-for="Description" class="form-label"></label>
-                                    <textarea asp-for="Description" class="form-control" rows="3" placeholder="Product description"></textarea>
-                                    <span asp-validation-for="Description" class="text-danger"></span>
-                                </div>
-
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <label asp-for="ManufacturedDate" class="form-label"></label>
-                                        <input asp-for="ManufacturedDate" type="date" class="form-control">
-                                        <span asp-validation-for="ManufacturedDate" class="text-danger"></span>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label asp-for="ExpiryDate" class="form-label"></label>
-                                        <input asp-for="ExpiryDate" type="date" class="form-control">
-                                        <span asp-validation-for="ExpiryDate" class="text-danger"></span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label asp-for="Price" class="form-label"></label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">Rs.</span>
-                                        <input asp-for="Price" class="form-control" placeholder="0.00">
-                                    </div>
-                                    <span asp-validation-for="Price" class="text-danger"></span>
-                                </div>
-
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <label asp-for="Quantity" class="form-label"></label>
-                                        <input asp-for="Quantity" class="form-control" placeholder="Enter quantity">
-                                        <span asp-validation-for="Quantity" class="text-danger"></span>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label asp-for="ReorderLevel" class="form-label"></label>
-                                        <input asp-for="ReorderLevel" class="form-control" placeholder="Reorder level">
-                                        <span asp-validation-for="ReorderLevel" class="text-danger"></span>
-                                    </div>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label">Product Image</label>
-                                    <input type="file" name="imageFile" class="form-control" accept="image/*" required
-                                           onchange="document.getElementById('imagePreview').style.display = 'block';">
-                                    <div class="form-text">Upload a product image (JPG, PNG, etc.)</div>
-                                    <span asp-validation-for="ImagePath" class="text-danger"></span>
-                                </div>
-
-                                <div class="text-center">
-                                    <img id="imagePreview" class="product-image-preview" alt="Product image preview">
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label asp-for="CategoryId" class="form-label"></label>
-                                    <select asp-for="CategoryId" class="form-select"
-                                            asp-items="@(new SelectList(ViewBag.Categories, "Id", "Name"))">
-                                        <option value="">-- Select Category --</option>
-                                    </select>
-                                    <span asp-validation-for="CategoryId" class="text-danger"></span>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label asp-for="UnitMeasureId" class="form-label"></label>
-                                    <select asp-for="UnitMeasureId" class="form-select"
-                                            asp-items="@(new SelectList(ViewBag.UnitMeasures, "Id", "Name"))">
-                                        <option value="">-- Select Unit --</option>
-                                    </select>
-                                    <span asp-validation-for="UnitMeasureId" class="text-danger"></span>
-                                </div>
-                            </div>
-
-                            <div class="col-12">
-                                <div class="d-flex justify-content-end mt-4">
-                                    <button type="submit" class="btn btn-purple me-2">
-                                        <i class="bi bi-check-circle me-1"></i> Create Product
-                                    </button>
-                                    <button type="reset" class="btn btn-outline-secondary">
-                                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+            <div class="text-center text-md-start mb-3 mb-md-0">
+                <h1 class="display-5 fw-bold"><i class="bi bi-plus-circle me-2"></i>Add New Product</h1>
+                <p class="lead mb-0">Create a new product with initial batch</p>
             </div>
+            <a asp-action="Index" class="btn btn-light">
+                <i class="bi bi-arrow-left me-1"></i> Back to List
+            </a>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<div class="container py-4">
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-primary text-white py-3">
+            <h5 class="mb-0"><i class="bi bi-box-seam me-2"></i>Product Information</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" enctype="multipart/form-data" class="row g-3">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label fw-bold">Product Name *</label>
+                        <input asp-for="Name" class="form-control form-control-lg" placeholder="Enter product name">
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label fw-bold">Description</label>
+                        <textarea asp-for="Description" class="form-control" rows="3" placeholder="Product description"></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="CategoryId" class="form-label fw-bold">Category *</label>
+                                <select asp-for="CategoryId" class="form-select form-select-lg"
+                                        asp-items="@(new SelectList(ViewBag.Categories, "Id", "Name"))">
+                                    <option value="">-- Select Category --</option>
+                                </select>
+                                <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="UnitMeasureId" class="form-label fw-bold">Unit of Measure *</label>
+                                <select asp-for="UnitMeasureId" class="form-select form-select-lg"
+                                        asp-items="@(new SelectList(ViewBag.UnitMeasures, "Id", "Name"))">
+                                    <option value="">-- Select Unit --</option>
+                                </select>
+                                <span asp-validation-for="UnitMeasureId" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Product Image</label>
+                        <div class="border rounded p-3 text-center bg-light h-100">
+                            <div id="imagePreviewContainer" class="mb-3" style="display: none; min-height: 200px;">
+                                <img id="imagePreview" class="img-fluid rounded" style="max-height: 200px;">
+                            </div>
+                            <div class="d-flex flex-column align-items-center justify-content-center h-100">
+                                <div class="mb-2 w-100">
+                                    <input type="file" name="imageFile" class="form-control"
+                                           accept="image/*" id="imageUpload">
+                                </div>
+                                <p class="text-muted small mb-0">JPG, PNG or GIF - Max 5MB</p>
+                            </div>
+                        </div>
+                        <span asp-validation-for="ImagePath" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="card border-primary mt-3">
+                        <div class="card-header bg-primary text-white py-2">
+                            <h6 class="mb-0"><i class="bi bi-box-seam me-1"></i>Initial Stock Batch</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <div class="mb-2">
+                                        <label asp-for="Quantity" class="form-label fw-bold">Quantity *</label>
+                                        <input asp-for="Quantity" class="form-control form-control-lg">
+                                        <span asp-validation-for="Quantity" class="text-danger small"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-2">
+                                        <label asp-for="PurchasePrice" class="form-label fw-bold">Cost Price *</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light">Rs.</span>
+                                            <input asp-for="PurchasePrice" class="form-control form-control-lg">
+                                        </div>
+                                        <span asp-validation-for="PurchasePrice" class="text-danger small"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-2">
+                                        <label asp-for="BasePrice" class="form-label fw-bold">Selling Price *</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light">Rs.</span>
+                                            <input asp-for="BasePrice" class="form-control form-control-lg">
+                                        </div>
+                                        <span asp-validation-for="BasePrice" class="text-danger small"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-2">
+                                        <label asp-for="ReorderLevel" class="form-label fw-bold">Reorder Level</label>
+                                        <input asp-for="ReorderLevel" class="form-control form-control-lg">
+                                        <span asp-validation-for="ReorderLevel" class="text-danger small"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-2">
+                                        <label asp-for="ManufacturedDate" class="form-label fw-bold">Manufacture Date *</label>
+                                        <input asp-for="ManufacturedDate" type="date" class="form-control form-control-lg">
+                                        <span asp-validation-for="ManufacturedDate" class="text-danger small"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-2">
+                                        <label asp-for="ExpiryDate" class="form-label fw-bold">Expiry Date *</label>
+                                        <input asp-for="ExpiryDate" type="date" class="form-control form-control-lg">
+                                        <span asp-validation-for="ExpiryDate" class="text-danger small"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 mt-4">
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary btn-lg me-2">
+                            <i class="bi bi-check-circle me-1"></i> Create Product
+                        </button>
+                        <button type="reset" class="btn btn-outline-secondary btn-lg">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
     <script>
-        // Image preview functionality
-        document.querySelector('input[type="file"]').addEventListener('change', function(e) {
-            if (this.files && this.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('imagePreview').src = e.target.result;
-                    document.getElementById('imagePreview').style.display = 'block';
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            const nextYear = new Date();
+            nextYear.setFullYear(nextYear.getFullYear() + 1);
+            const nextYearFormatted = nextYear.toISOString().split('T')[0];
+
+            document.getElementById('ManufacturedDate').value = today;
+            document.getElementById('ExpiryDate').value = nextYearFormatted;
+
+            document.getElementById('imageUpload').addEventListener('change', function(e) {
+                const preview = document.getElementById('imagePreview');
+                const container = document.getElementById('imagePreviewContainer');
+
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        container.style.display = 'block';
+                    }
+                    reader.readAsDataURL(this.files[0]);
+                } else {
+                    container.style.display = 'none';
                 }
-                reader.readAsDataURL(this.files[0]);
-            }
+            });
         });
     </script>
-</body>
-</html>
+}

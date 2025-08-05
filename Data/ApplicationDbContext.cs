@@ -55,8 +55,9 @@ namespace InventorySolution.Data
         public DbSet<Location> Locations { get; set; }
         public DbSet<RecentlyViewed> RecentlyViewed { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<ProductBatch> ProductBatches { get; set; }
 
-      
 
-}
+
+    }
 }

@@ -1,3 +1,5 @@
+#nullable enable  
+
 namespace InventorySolution.Models
 {
     public class ErrorViewModel
